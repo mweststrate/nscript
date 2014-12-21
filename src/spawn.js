@@ -38,7 +38,7 @@ exports.spawn = function(commandAndArgs, onOut, onErr, throwOnError, blocking) {
 	var cmd = commandAndArgs.shift();
 
 	if (jsDo.verbose())
-		console.log("> Starting: " + lastCommand);
+		console.log(jsDo.colors.gray("Starting: " + lastCommand));
 
 	var child = child_process.spawn(cmd, commandAndArgs, {
 		cwd: jsDo.cwd(),
@@ -61,7 +61,7 @@ exports.spawn = function(commandAndArgs, onOut, onErr, throwOnError, blocking) {
 	if (blocking) {
 		var status = future.wait();
 		if (jsDo.verbose())
-			console.log("> Finished with exit code: " + status);
+			console.log(jsDo.bold(jsDo.colors[status === 0 ? 'green' : 'red']("Finished with exit code: " + status)));
 		if (status && throwOnError)
 			throw new Error("Command '" + lastCommand + "' failed with status: " + status);
 		return status;

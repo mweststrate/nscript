@@ -14,7 +14,7 @@ var readline = require('readline');
 var Fiber = require('fibers');
 var Future = require('fibers/future');
 var jsDoRepl = require('./jsdorepl.js');
-
+var colors = require('colors/safe');
 /*
  * State
  */
@@ -24,6 +24,8 @@ var silent = false;
 var jsDo = module.exports = function() {
 	return jsDo.run.apply(null, arguments);
 };
+
+jsDo.colors = colors; //expose colors through jsDo
 
 //require after defining jsDo!
 var command = require('./command.js');
@@ -98,7 +100,7 @@ jsDo.run = function() {
 
 jsDo.exit = function(status) {
 	if (jsDo.verbose())
-		console.log("> Exiting with status: " + status);
+		console.log(colors.bold(colors[status === 0 ? 'green':'red']("Exiting with status: " + status)));
 	process.exit(status);
 };
 
@@ -127,7 +129,7 @@ jsDo.prompt = function(prompt) {
 		var line = future.wait();
 		rl.close();
 		if (jsDo.verbose())
-			console.log("> User input: " + line);
+			console.log(colors.gray("User input: " + line));
 		return line;
 	} finally {
 		jsDoRepl.resume();
@@ -165,7 +167,7 @@ jsDo.cd = function(newdir) {
 	});
 	process.chdir(newdir);
 	if (jsDo.verbose())
-		console.log("> Entering " + jsDo.cwd());
+		console.log(colors.cyan("> Entering " + jsDo.cwd()));
 };
 
 jsDo.pid = process.pid;
