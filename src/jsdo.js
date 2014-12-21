@@ -13,18 +13,20 @@ var child_process = require('child_process');
 var readline = require('readline');
 var Fiber = require('fibers');
 var Future = require('fibers/future');
-var command = require('./command.js');
+var jsDoRepl = require('./jsdorepl.js');
 
 /*
  * State
  */
-var verbose = false;
+var verbose = true;
 var silent = false;
 
-var jsDo = exports = function() {
+var jsDo = module.exports = function() {
 	return jsDo.run.apply(null, arguments);
 };
-jsDo.pid = process.pid;
+
+//require after defining jsDo!
+var command = require('./command.js');
 var startDir = process.cwd();
 
 /**
@@ -101,16 +103,69 @@ jsDo.exit = function(status) {
 };
 
 jsDo.prompt = function(prompt) {
-	var future = new Future();
-	var rl = readline.createInterface(process.stdin, process.stdout);
-	rl.setPrompt(prompt);
-	rl.prompt();
-	rl.on('line', function(line) {
-		future.return(line.trim());
+	//when running a REPL, we need a new fiber
+	if (!Fiber.current) {
+		new Fiber(function() {
+			jsDo.prompt(prompt);
+		}).run();
+		return;
+	}
+
+	jsDoRepl.pause();
+	try {
+		var future = new Future();
+		var rl;
+		setImmediate(function() { //set immediate enables the Node REPL to close before the prompt
+			console.log("\n");
+			rl = readline.createInterface(process.stdin, process.stdout);
+			rl.setPrompt("" + prompt);
+			rl.prompt();
+			rl.on('line', function(line) {
+				future.return(line.trim());
+			});
+		});
+		var line = future.wait();
+		rl.close();
+		if (jsDo.verbose())
+			console.log("> User input: " + line);
+		return line;
+	} finally {
+		jsDoRepl.resume();
+	}
+};
+
+jsDo.verbose = function(newVerbose) {
+	if (newVerbose === undefined)
+		return verbose;
+	verbose = !!newVerbose;
+};
+
+jsDo.silent = function(newSilent) {
+	if (newSilent === undefined)
+		return silent;
+	silent = !!newSilent;
+};
+
+jsDo.useGlobals = function() {
+	for(var key in jsDo) {
+		console.log("> Defining " + key)
+		global[key] = jsDo[key];
+	}
+};
+
+jsDo.cwd = function() {
+	return process.cwd();
+};
+
+jsDo.cd = function(newdir) {
+	if (arguments.length === 0)
+		newdir = startDir;
+	newdir = newdir.replace(/~/g, function() {
+		return require('home-dir').directory;
 	});
-	var line = future.wait();
-	rl.close();
-	return line;
+	process.chdir(newdir);
+	if (jsDo.verbose())
+		console.log("> Entering " + jsDo.cwd());
 };
 
 jsDo.pid = process.pid;
@@ -125,15 +180,20 @@ if (!module.parent) {
 		runJsdoFunction(new Function("jsdo", readInputStream));
 }
 */
+/*
 Fiber(function() {
-	console.log("got: " + jsDo.run("read").out);
+	console.log("got: " + jsDo.code("ls"));
 }).run();
+*/
 
+//TODO: if started without args
+jsDo.useGlobals();
+jsDoRepl.start();
 
 //chdir
 //cwd
 //env
-//exit 
+//exit
 //version (node version)
 //pid
 //uptime

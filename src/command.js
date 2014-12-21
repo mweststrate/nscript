@@ -5,20 +5,20 @@ var path = require('path');
 var buffer = require('buffer');
 var stream = require('stream');
 
-exports = function command() {
+module.exports = function command() {
 	var commandArgs = arguments;
 
-	function spawn(args, onOut, onErr, blocking) {
+	function spawnHelper(args, onOut, onErr, blocking) {
 		return spawn.spawn(Array.prototype.concat.call(commandArgs, args));
 	}
 
 	var runner = function() {
-		spawn(arguments);
+		spawnHelper(arguments);
 	};
 
 	runner.get = function() {
 		var buffer = "";
-		spawn(arguments, function(data) {
+		spawnHelper(arguments, function(data) {
 			buffer += data.toString();
 		});
 		return buffer;
@@ -31,7 +31,7 @@ exports = function command() {
 			flags : mode
 		});
 		try {
-			return spawn(arguments, function(data) {
+			return spawnHelper(arguments, function(data) {
 				outStream.write(data);
 			});
 		} finally {
@@ -43,7 +43,7 @@ exports = function command() {
 	runner.appendToTo = outputToFile.bind(null, 'a');
 
 	runner.pipe = function() {
-		var child = spawn(arguments, null, null, false, false);
+		var child = spawnHelper(arguments, null, null, false, false);
 		spawn.setNextInputStream(child.stdio);
 		return command(); //returns a new empty command for immediate follow up
 	};
@@ -65,7 +65,7 @@ exports = function command() {
 	};
 
 	runner.code = function() {
-		return spawn(arguments, null, null, false);
+		return spawnHelper(arguments, null, null, false);
 	};
 
 	runner.test = function() {

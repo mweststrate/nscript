@@ -2,6 +2,7 @@
  * Imports
  */
 var jsDo = require('./jsdo.js');
+var jsDoRepl = require('./jsdorepl.js');
 var child_process = require('child_process');
 var Fiber = require('fibers');
 var Future = require('fibers/future');
@@ -32,6 +33,7 @@ exports.spawn = function(commandAndArgs, onOut, onErr, throwOnError, blocking) {
 	blocking = blocking !== false;
 	throwOnError = throwOnError !== false;
 	lastCommand = commandAndArgs.join(" ");
+	jsDoRepl.pause();
 	var future = blocking ? new Future() : null;
 	var cmd = commandAndArgs.shift();
 
@@ -39,7 +41,7 @@ exports.spawn = function(commandAndArgs, onOut, onErr, throwOnError, blocking) {
 		console.log("> Starting: " + lastCommand);
 
 	var child = child_process.spawn(cmd, commandAndArgs, {
-		cwd: jsDo.getCwd(),
+		cwd: jsDo.cwd(),
 		stdio : [
 			getNextInputStream(),
 			onOut ? null : jsDo.silent() ? 'ignore' : 'pipe', //null creates a new pipe
@@ -51,6 +53,7 @@ exports.spawn = function(commandAndArgs, onOut, onErr, throwOnError, blocking) {
 	if (onErr)
 		child.stdout.on('data', onErr);
 	child.on('close', function(code) {
+		jsDoRepl.resume();
 		if (blocking)
 			future.return(code);
 	});

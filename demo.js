@@ -13,7 +13,7 @@ exports = function(jsDo, exec, cp, cf) {
 	ls.getLines(offset, limit/offsetend)("*")
 	ls.writeTo("*", "output.txt");
 	ls.appendTo("*", "output.txt");
-	ls.pipe("*"); cat(); //picks up the pipe
+	cat.input(ls.pipe("*")); //pipe ls to cat
 	ls.pipe("*")("cat"); //picks up the pipe
 	ls.input("string/buffer/stream")("*");
 	ls.input("string/buffer/stream").get("*");
@@ -21,18 +21,22 @@ exports = function(jsDo, exec, cp, cf) {
 	ls.test("*") //returns true if code == 0
 	ls.code("*") //returns status code
 
-	jsDo.pid;
-	jsDo.args; //array + map
-	jsDo.args.x; //returns string value or true
-	jsDo.env.x; //
+	//Toggles
+	jsDo.silent(), //TODO: part of a command, not global
+	jsDo.verbose()
+
+	jsDo.useGlobals(); //create global functions
+	
 	jsDo.cwd();
 	jsDo.cd(); //empty resets to begin dir
 	var ls = jsDo.wrap("ls");
 
-	//Toggles
-	jsDo.silent(), verbose()
+	jsDo.pid;
 
-	jsDo.useGlobals(); //create global functions
+	jsDo.args; //array + map
+	jsDo.args.x; //returns string value or true
+	jsDo.env.x; //
+
 	require('jsdo/globals')
 
 	cat("a", "b");

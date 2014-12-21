@@ -1,6 +1,6 @@
 # jsdo
 
-## Javascript shellscript for the masses
+## Javascript based shell scripting for the masses
 
 # Getting started
 
