@@ -20,13 +20,14 @@ exports = function(jsDo, exec, cp, cf) {
 	ls.inputFile("input.txt")("*");
 	ls.test("*") //returns true if code == 0
 	ls.code("*") //returns status code
+	ls.detach("*") //run in bg, returns pid
 
 	//Toggles
 	jsDo.silent(), //TODO: part of a command, not global
 	jsDo.verbose()
 
 	jsDo.useGlobals(); //create global functions
-	
+
 	jsDo.cwd();
 	jsDo.cd(); //empty resets to begin dir
 	var ls = jsDo.wrap("ls");

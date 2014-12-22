@@ -1,35 +1,50 @@
 var repl = require('repl');
 var colors = require('colors/safe');
+var stream = require('stream');
+var jsDo = require('./jsdo.js');
 
 var active = false;
 var pauseCount = 0;
-var replHandle = null;
+var replServer = null;
 
 var start = exports.start = function() {
 	active = true;
 
-	replHandle = repl.start({
-		prompt: 'do $ ',
+	var inputStream = new stream.Transform();
+	inputStream._transform = function(data, encoding, callback) {
+		//only listen to stdin if no process or prompt is active!
+		if (pauseCount === 0)
+			this.push(data);
+		callback();
+	};
+
+	process.stdin.pause();
+	process.stdin.pipe(inputStream);
+	process.stdin.resume();
+
+	replServer = repl.start({
+		prompt: getPrompt(),
+		input: inputStream,
+		output: process.stdout,
 		ignoreUndefined: true,
 		useGlobal: true,
 		useColors: true
 	});
 };
 
+function getPrompt() {
+	return "[" + jsDo.cwd() + "] $ ";
+}
+
 exports.pause = function() {
-	if (active) {
-		if (pauseCount === 0) {
-			replHandle.parseREPLKeyword(".exit")
-			//replHandle.close();
-		}
-		pauseCount += 1;
-	}
+	pauseCount += 1;
 };
 
 exports.resume = function() {
-	if (active) {
-		pauseCount -= 1;
-		if (pauseCount === 0)
-			start();
-	}
+	pauseCount -= 1;
+};
+
+exports.updatePrompt = function() {
+	if (active)
+		replServer.prompt = getPrompt();
 };

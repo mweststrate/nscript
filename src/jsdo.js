@@ -13,7 +13,6 @@ var child_process = require('child_process');
 var readline = require('readline');
 var Fiber = require('fibers');
 var Future = require('fibers/future');
-var jsDoRepl = require('./jsdorepl.js');
 var colors = require('colors/safe');
 /*
  * State
@@ -29,6 +28,7 @@ jsDo.colors = colors; //expose colors through jsDo
 
 //require after defining jsDo!
 var command = require('./command.js');
+var jsDoRepl = require('./jsdorepl.js');
 var startDir = process.cwd();
 
 /**
@@ -120,14 +120,14 @@ jsDo.prompt = function(prompt) {
 		setImmediate(function() { //set immediate enables the Node REPL to close before the prompt
 			console.log("\n");
 			rl = readline.createInterface(process.stdin, process.stdout);
-			rl.setPrompt("" + prompt);
+			rl.setPrompt("" + prompt + " ");
 			rl.prompt();
 			rl.on('line', function(line) {
 				future.return(line.trim());
 			});
 		});
 		var line = future.wait();
-		rl.close();
+		//rl.close();
 		if (jsDo.verbose())
 			console.log(colors.gray("User input: " + line));
 		return line;
@@ -150,7 +150,7 @@ jsDo.silent = function(newSilent) {
 
 jsDo.useGlobals = function() {
 	for(var key in jsDo) {
-		console.log("> Defining " + key)
+		console.log("> Defining " + key);
 		global[key] = jsDo[key];
 	}
 };
@@ -166,6 +166,7 @@ jsDo.cd = function(newdir) {
 		return require('home-dir').directory;
 	});
 	process.chdir(newdir);
+	jsDoRepl.updatePrompt();
 	if (jsDo.verbose())
 		console.log(colors.cyan("> Entering " + jsDo.cwd()));
 };
