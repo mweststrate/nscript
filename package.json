@@ -1,0 +1,31 @@
+{
+  "name": "jsDo",
+  "version": "0.0.0",
+  "description": "Javascript based shell scripting for the masses",
+  "main": "src/jsdo.js",
+  "dependencies": {
+    "colors": "^1.0.3",
+    "execSync": "^1.0.2",
+    "fibers": "^1.0.2",
+    "home-dir": "^0.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "nodeunit test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mweststrate/jsDo.git"
+  },
+  "keywords": [
+    "shell",
+    "script",
+    "shellscript"
+  ],
+  "author": "Michel Weststrate",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mweststrate/jsDo/issues"
+  },
+  "homepage": "https://github.com/mweststrate/jsDo"
+}
