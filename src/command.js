@@ -4,34 +4,38 @@ var fs = require('fs');
 var path = require('path');
 var buffer = require('buffer');
 var stream = require('stream');
+var toArray = require('./utils.js').toArray;
 
 module.exports = function command() {
-	var commandArgs = arguments;
+	var commandArgs = toArray(arguments);
 
-	function spawnHelper(args, onOut, onErr, blocking) {
-		return spawn.spawn(Array.prototype.concat.call(commandArgs, args));
+	function spawnHelper(moreArgs, onOut, onErr, blocking) {
+		var args = toArray(arguments);
+		args[0] = commandArgs.concat(moreArgs);
+		return spawn.spawn.apply(null, args);
 	}
 
 	var runner = function() {
-		spawnHelper(arguments);
+		spawnHelper(toArray(arguments));
 	};
 
 	runner.get = function() {
 		var buffer = "";
-		spawnHelper(arguments, function(data) {
+		spawnHelper(toArray(arguments), function(data) {
 			buffer += data.toString();
 		});
 		return buffer;
 	};
 
 	function outputToFile(m) {
-		var mode = Array.prototype.shift.apply(arguments);
-		var target = Array.prototype.shift.apply(arguments);
+		var args = toArray(arguments);
+		var mode = args.shift();
+		var target = args.shift();
 		var outStream = fs.createWriteStream(path.join(jsdo.getCwd(), target), {
 			flags : mode
 		});
 		try {
-			return spawnHelper(arguments, function(data) {
+			return spawnHelper(args, function(data) {
 				outStream.write(data);
 			});
 		} finally {
@@ -43,7 +47,7 @@ module.exports = function command() {
 	runner.appendToTo = outputToFile.bind(null, 'a');
 
 	runner.pipe = function() {
-		var child = spawnHelper(arguments, null, null, false, false);
+		var child = spawnHelper(toArray(arguments), null, null, false, false);
 		spawn.setNextInputStream(child.stdio);
 		return command(); //returns a new empty command for immediate follow up
 	};
@@ -65,7 +69,7 @@ module.exports = function command() {
 	};
 
 	runner.code = function() {
-		return spawnHelper(arguments, null, null, false);
+		return spawnHelper(toArray(arguments), null, null, false);
 	};
 
 	runner.test = function() {

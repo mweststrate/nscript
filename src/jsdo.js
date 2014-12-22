@@ -14,6 +14,7 @@ var readline = require('readline');
 var Fiber = require('fibers');
 var Future = require('fibers/future');
 var colors = require('colors/safe');
+var toArray = require('./utils.js').toArray;
 /*
  * State
  */
@@ -21,7 +22,7 @@ var verbose = true;
 var silent = false;
 
 var jsDo = module.exports = function() {
-	return jsDo.run.apply(null, arguments);
+	return jsDo.run.apply(null, toArray(arguments));
 };
 
 jsDo.colors = colors; //expose colors through jsDo
@@ -127,7 +128,7 @@ jsDo.prompt = function(prompt) {
 			});
 		});
 		var line = future.wait();
-		//rl.close();
+		rl.close();
 		if (jsDo.verbose())
 			console.log(colors.gray("User input: " + line));
 		return line;

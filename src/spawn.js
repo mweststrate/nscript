@@ -44,14 +44,14 @@ exports.spawn = function(commandAndArgs, onOut, onErr, throwOnError, blocking) {
 		cwd: jsDo.cwd(),
 		stdio : [
 			getNextInputStream(),
-			onOut ? null : jsDo.silent() ? 'ignore' : 'pipe', //null creates a new pipe
-			onErr ? null : jsDo.silent() ? 'ignore' : 'pipe'
+			onOut ? null : jsDo.silent() ? 'ignore' : 1, //null creates a new pipe
+			onErr ? null : jsDo.silent() ? 'ignore' : 2
 		]
 	});
 	if (onOut)
 		child.stdout.on('data', onOut);
 	if (onErr)
-		child.stdout.on('data', onErr);
+		child.stderr.on('data', onErr);
 	child.on('close', function(code) {
 		jsDoRepl.resume();
 		if (blocking)
@@ -61,7 +61,7 @@ exports.spawn = function(commandAndArgs, onOut, onErr, throwOnError, blocking) {
 	if (blocking) {
 		var status = future.wait();
 		if (jsDo.verbose())
-			console.log(jsDo.bold(jsDo.colors[status === 0 ? 'green' : 'red']("Finished with exit code: " + status)));
+			console.log(jsDo.colors.bold(jsDo.colors[status === 0 ? 'green' : 'red']("Finished with exit code: " + status)));
 		if (status && throwOnError)
 			throw new Error("Command '" + lastCommand + "' failed with status: " + status);
 		return status;
