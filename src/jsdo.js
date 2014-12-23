@@ -14,12 +14,12 @@ var readline = require('readline');
 var Fiber = require('fibers');
 var Future = require('fibers/future');
 var colors = require('colors/safe');
-var toArray = require('./utils.js').toArray;
+var utils = require('./utils.js');
+var toArray = utils.toArray;
 /*
  * State
  */
 var verbose = true;
-var silent = false;
 
 var jsDo = module.exports = function() {
 	return jsDo.run.apply(null, toArray(arguments));
@@ -41,27 +41,12 @@ for(var key in emptyCommand) if (emptyCommand.hasOwnProperty(key))
 	jsDo[key] = emptyCommand[key];
 
 /**
- * Given a function, returns an array of the (formal) parameter names. For example
- * `extractFunctionArgumentNames(function(a,b){}) == ['a','b']`
- *
- * @param  {Function} fn The function to reflect on
- * @return {Array}      Array of strings with the parameter names
- */
-function extractFunctionArgumentNames(fn) {
-	//http://stackoverflow.com/a/14660057
-	return fn.toString()
-		.replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s))/mg,'')
-		.match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
-		.split(/,/);
-}
-
-/**
  * Runs a function using jsDo. Params will be wrapped @see jsDo.wrap based on their name, except for the first one, which will be replaced by jsdo itself.
  * @param  {function} func
  */
 function runJsdoFunction(func) {
 	//parse and args
-	var args = extractFunctionArgumentNames(func);
+	var args = utils.extractFunctionArgumentNames(func);
 	args.map(jsDo.wrap);
 	args[0] = jsdo;
 	//invoke
@@ -106,14 +91,6 @@ jsDo.exit = function(status) {
 };
 
 jsDo.prompt = function(prompt) {
-	//when running a REPL, we need a new fiber
-	if (!Fiber.current) {
-		new Fiber(function() {
-			jsDo.prompt(prompt);
-		}).run();
-		return;
-	}
-
 	jsDoRepl.pause();
 	try {
 		var future = new Future();
@@ -141,12 +118,6 @@ jsDo.verbose = function(newVerbose) {
 	if (newVerbose === undefined)
 		return verbose;
 	verbose = !!newVerbose;
-};
-
-jsDo.silent = function(newSilent) {
-	if (newSilent === undefined)
-		return silent;
-	silent = !!newSilent;
 };
 
 jsDo.useGlobals = function() {

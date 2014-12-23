@@ -11,6 +11,7 @@ exports = function(jsDo, exec, cp, cf) {
 	ls("*") //returns status code
 	ls.get("*") //returns stdout
 	ls.getLines(offset, limit/offsetend)("*")
+	ls.withLines(callback)()
 	ls.writeTo("*", "output.txt");
 	ls.appendTo("*", "output.txt");
 	cat.input(ls.pipe("*")); //pipe ls to cat
@@ -48,6 +49,12 @@ exports = function(jsDo, exec, cp, cf) {
 	jsdo.parseColumns(stringOrArray)
 	jsdo.parseFixedWidthColumns
 	jsdo.setColumnNames
+
+	//Globbing:
+	cat("*.js"); //expand then quote
+	cat("**.js");
+	cat(quote("dot*js")); //or: cat(["dot*js"])
+	cat(myvarname variable)
 }
 
 // 1. make exec sync and script work
