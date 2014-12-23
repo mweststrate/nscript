@@ -122,7 +122,6 @@ jsDo.verbose = function(newVerbose) {
 
 jsDo.useGlobals = function() {
 	for(var key in jsDo) {
-		console.log("> Defining " + key);
 		global[key] = jsDo[key];
 	}
 };

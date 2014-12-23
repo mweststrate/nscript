@@ -49,16 +49,22 @@ exports.spawn = function(commandAndArgs, opts) {
 		cwd: jsDo.cwd(),
 		detached: opts.detached,
 		stdio : [
-			opts.stdin || 0,
+			opts.stdin ? typeof opts.stdin == "number" ? opts.stdin : 'pipe' : 0,
 			opts.onOut ? null : opts.silent ? 'ignore' : (opts.stdout || 1), //null creates a new pipe
 			opts.onError ? null : opts.silent ? 'ignore' : (opts.stderr || 2)
 		]
 	});
+	if (opts.stdin && typeof opts.stdin != "number") {
+		console.log('piping');
+		opts.stdin.pipe(child.stdin);
+	}
 	if (opts.onOut)
 		child.stdout.on('data', opts.onOut);
 	if (opts.onError)
 		child.stderr.on('data', opts.onError);
 	child.on('close', function(code) {
+		if (jsDo.verbose())
+			console.log(jsDo.colors.bold(jsDo.colors[code === 0 ? 'green' : 'red']("Finished with exit code: " + code)));
 		if (!opts.detached)
 			jsDoRepl.resume();
 		if (opts.blocking)
@@ -67,8 +73,6 @@ exports.spawn = function(commandAndArgs, opts) {
 
 	if (opts.blocking) {
 		var status = future.wait();
-		if (jsDo.verbose())
-			console.log(jsDo.colors.bold(jsDo.colors[status === 0 ? 'green' : 'red']("Finished with exit code: " + status)));
 		if (status && opts.throwOnError)
 			throw new Error("Command '" + lastCommand + "' failed with status: " + status);
 		return status;

@@ -59,20 +59,24 @@ module.exports = function command() {
 	runner.pipe = function() {
 		var child = spawnHelper(toArray(arguments), {
 			blocking: false,
-			throwOnError: false
+			throwOnError: false,
+			stdout: 'pipe'
 		});
-		return command().stdout; //returns a new empty command for immediate follow up
+		return child.stdout; //returns a new empty command for immediate follow up
 	};
 
 	runner.input = function(input) {
-		if (input instanceof stream.Readable)
+		if (input && input.pipe) {
+			console.log('got readable')
 			nextOptions.stdin = input;
+		}
 		else { //string or buffer
 			// http://stackoverflow.com/questions/16038705/how-to-wrap-a-buffer-as-a-stream2-readable-stream#16039177
 			var bufferStream = new stream.Readable();
-			bufferStream._read = function noop() {};
-			bufferStream.push(input);
-			bufferStream.push(null);
+			bufferStream._read = function () {
+				this.push('' + input + '\n'); //TODO: append newline, for usage with cat for example?
+				this.push(null);
+			};
 			nextOptions.stdin = bufferStream;
 		}
 		return this;

@@ -19,6 +19,8 @@ var start = exports.start = function() {
 		useColors: true
 	});
 
+//TODO: retry stream switch, with pipe(bla, { end: false})
+
 	var eval = replServer.eval;
 	replServer.eval = function() {
 		var args = arguments;
@@ -29,7 +31,7 @@ var start = exports.start = function() {
 };
 
 function getPrompt() {
-	return "[" + jsDo.cwd() + "] $ ";
+	return "[" + jsDo.cwd() + "] $ "; //TODO: replace homedir
 }
 
 exports.pause = function() {
