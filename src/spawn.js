@@ -49,21 +49,25 @@ exports.spawn = function(commandAndArgs, opts) {
 		cwd: jsDo.cwd(),
 		detached: opts.detached,
 		stdio : [
-			opts.stdin ? typeof opts.stdin == "number" ? opts.stdin : 'pipe' : 0,
-			opts.onOut ? null : opts.silent ? 'ignore' : (opts.stdout || 1), //null creates a new pipe
-			opts.onError ? null : opts.silent ? 'ignore' : (opts.stderr || 2)
+			opts.stdin ? (typeof opts.stdin == "number" ? opts.stdin : 'pipe') : 0,
+			opts.onOut ? 'pipe' : (opts.stdout ? opts.stdout : (opts.silent ? 'ignore' : 1)),
+			opts.onError ? 'pipe' : (opts.stderr ? opts.stderr : (opts.silent ? 'ignore' : 2))
 		]
 	});
 	if (opts.stdin && typeof opts.stdin != "number") {
-		console.log('piping');
 		opts.stdin.pipe(child.stdin);
 	}
 	if (opts.onOut)
 		child.stdout.on('data', opts.onOut);
 	if (opts.onError)
 		child.stderr.on('data', opts.onError);
+	child.on('error', function(err) {
+		console.error(jsDo.colors.red("Failed to spawn '" + lastCommand + "': " + err));
+	});
 	child.on('close', function(code) {
-		if (jsDo.verbose())
+		if (code < 0)
+			console.log(jsDo.colors.bold(jsDo.colors.red("Failed to start the child process: " + code)));
+		else if (jsDo.verbose())
 			console.log(jsDo.colors.bold(jsDo.colors[code === 0 ? 'green' : 'red']("Finished with exit code: " + code)));
 		if (!opts.detached)
 			jsDoRepl.resume();

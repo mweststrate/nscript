@@ -62,12 +62,11 @@ module.exports = function command() {
 			throwOnError: false,
 			stdout: 'pipe'
 		});
-		return child.stdout; //returns a new empty command for immediate follow up
+		return child.stdout;//._handle.fd; //TODO: is this better than just child.stdout?
 	};
 
 	runner.input = function(input) {
-		if (input && input.pipe) {
-			console.log('got readable')
+		if (typeof(input) == "number" || (input && input.pipe)) {
 			nextOptions.stdin = input;
 		}
 		else { //string or buffer
