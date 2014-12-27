@@ -25,6 +25,8 @@ var jsDo = module.exports = function() {
 	return jsDo.run.apply(null, toArray(arguments));
 };
 
+//TODO: add functions for logging
+
 jsDo.colors = colors; //expose colors through jsDo
 
 //require after defining jsDo!
@@ -36,6 +38,7 @@ var startDir = process.cwd();
  * Make sure shorthand functions are available, so that for example this can be run:
  * jsDo.get("ls");
  */
+//TODO: don't use singleton, its dangerous
 var emptyCommand = command();
 for(var key in emptyCommand) if (emptyCommand.hasOwnProperty(key))
 	jsDo[key] = emptyCommand[key];

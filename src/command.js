@@ -47,6 +47,7 @@ module.exports = function command() {
 			console.log((flags == 'w' ? '>' : '>>') + ' filename');
 		var fd = fs.openSync(filename, flags);
 		try {
+			//TODO: writeTo / appendTo should not invoke the actual command ??
 			return spawnHelper(args, { stdout : fd });
 		} finally {
 			fs.closeSync(fd);
@@ -63,6 +64,8 @@ module.exports = function command() {
 			stdout: 'pipe'
 		});
 		return command().input(child.stdout);
+		//TODO: add guard on next tick that the pipe is fed into a command that was actually called
+		//TODO: add guard that input / inputFile isn't called!
 	};
 
 	runner.input = function(input) {

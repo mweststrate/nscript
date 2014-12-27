@@ -57,12 +57,16 @@ exports = function(jsDo, exec, cp, cf) {
 	cat(myvarname variable)
 }
 
+// 1. fix repl
+// 1. implement run methods (jsdo script, node script)
+// 1. test
 // 1. make exec sync and script work
 // 2. pipe, read, writeto
-// 3. fileUtils isFile, isDir, isExecutable, newer(), older(), outdated()
 // 4. file matching jsDo.findFiles("src/**/.js*") // jsDo.findDirs
 // 5. colors
 // 6. yargs
+// 1. rename (jsrun / jsr) ?
+// 5. improve logging
+// 3. fileUtils isFile, isDir, isExecutable, newer(), older(), outdated()
 // 7. grunt plugins?
-// pass expression into 'jsdo'
 // run as REPL
