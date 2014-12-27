@@ -62,7 +62,7 @@ module.exports = function command() {
 			throwOnError: false,
 			stdout: 'pipe'
 		});
-		return child.stdout;//._handle.fd; //TODO: is this better than just child.stdout?
+		return command().input(child.stdout);
 	};
 
 	runner.input = function(input) {
