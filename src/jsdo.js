@@ -94,27 +94,7 @@ jsDo.exit = function(status) {
 };
 
 jsDo.prompt = function(prompt) {
-	jsDoRepl.pause();
-	try {
-		var future = new Future();
-		var rl;
-		setImmediate(function() { //set immediate enables the Node REPL to close before the prompt
-			console.log("\n");
-			rl = readline.createInterface(process.stdin, process.stdout);
-			rl.setPrompt("" + prompt + " ");
-			rl.prompt();
-			rl.on('line', function(line) {
-				future.return(line.trim());
-			});
-		});
-		var line = future.wait();
-		rl.close();
-		if (jsDo.verbose())
-			console.log(colors.gray("User input: " + line));
-		return line;
-	} finally {
-		jsDoRepl.resume();
-	}
+	return jsDoRepl.prompt(prompt);
 };
 
 jsDo.verbose = function(newVerbose) {

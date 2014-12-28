@@ -1,32 +1,33 @@
 var repl = require('repl');
 var colors = require('colors/safe');
 var stream = require('stream');
-var jsDo = require('./jsdo.js');
 var Fiber = require('fibers');
+var Future = require('fibers/future');
+var jsDo = require('./jsdo.js');
 
-var active = false;
+
 var pauseCount = 0;
 var replServer = null;
+var supressEval = false;
 
 var start = exports.start = function() {
 	active = true;
 	replServer = repl.start({
 		prompt: getPrompt(),
-//		input: inputStream,
-//		output: process.stdout,
 		ignoreUndefined: true,
+		terminal: true,
 		useGlobal: true,
 		useColors: true
 	});
 
-//TODO: retry stream switch, with pipe(bla, { end: false})
-
-	var eval = replServer.eval;
+	var baseEval = replServer.eval;
 	replServer.eval = function() {
-		var args = arguments;
-		new Fiber(function() {
-			eval.apply(replServer, args);
-		}).run();
+		if (!supressEval) {
+			var args = arguments;
+			new Fiber(function() {
+				baseEval.apply(replServer, args);
+			}).run();
+		}
 	};
 };
 
@@ -34,20 +35,48 @@ function getPrompt() {
 	return "[" + jsDo.cwd() + "] $ "; //TODO: replace homedir
 }
 
-exports.pause = function() {
-	if (active) {
-		if (pauseCount === 0) {
-			replServer.parseREPLKeyword(".exit")
-		}
-		pauseCount += 1;
+exports.prompt = function(prompt) {
+	var useRepl = replServer !== null;
+	var future = new Future();
+	var rl;
+
+	if (useRepl) {
+		rl = replServer.rli;
+		supressEval = true;
 	}
+	else
+		rl = readline.createInterface(process.stdin, process.stdout);
+
+	rl.setPrompt("" + prompt + " ");
+	rl.prompt();
+	rl.once('line', function(line) {
+		future.return(line.trim());
+	});
+	var line = future.wait();
+
+	if (useRepl)
+		supressEval = false;
+	else
+		rl.close();
+
+	if (jsDo.verbose())
+		console.log(colors.gray("User input: " + line));
+	return line;
+}
+
+exports.pause = function() {
+	if (pauseCount === 0) {
+		replServer.rli.pause();
+		process.stdin.setRawMode(false); //make sure Ctrl+D etc still work.
+	}
+	pauseCount += 1;
 };
 
 exports.resume = function() {
-	if (active) {
-		pauseCount -= 1;
-		if (pauseCount === 0)
-			start();
+	pauseCount -= 1;
+	if (pauseCount === 0){
+		replServer.rli.resume();
+		process.stdin.setRawMode(true);
 	}
 };
 

@@ -69,4 +69,7 @@ exports = function(jsDo, exec, cp, cf) {
 // 5. improve logging
 // 3. fileUtils isFile, isDir, isExecutable, newer(), older(), outdated()
 // 7. grunt plugins?
+// 1. autocomplete for files & commands
+// 1. grabchars/ promptChar
+// 1. improve logging, simplify logging code
 // run as REPL
