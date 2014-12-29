@@ -59,16 +59,19 @@ exports = function(shell, exec, cp, cf) {
 
 //TODO
 
+// # Initial version (.1)
 // 1. -implement repl / prompt-
-// 1. implement run methods (shell script, node script)
+// 1. -implement run methods (shell script, node script)-
 // 1. tests
 // 1. -make exec sync and script work-
 // 2. -pipe, read, writeto-
-// 4. file matching shell.findFiles("src/**/.js*") // shell.findDirs
+// 4. file matching shell.findFiles("src/**/.js*") // shell.glob
 // 5. -colors-
 // 6. yargs
 // 1. rename (jsrun / jsr) ?
 // 5. improve logging, use stderr.
+// 
+// # Later versions prip
 // 3. fileUtils isFile, isDir, isExecutable, newer(), older(), outdated()
 // 7. grunt plugins?
 // 1. autocomplete for files & commands

@@ -28,3 +28,7 @@ exports.extractFunctionArgumentNames = function(fn) {
 		.match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
 		.split(/,/);
 };
+
+exports.isFunction = function(fn) {
+	return typeof fn === "function";
+};

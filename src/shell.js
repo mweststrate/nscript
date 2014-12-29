@@ -1,7 +1,7 @@
 /* GLOBAL exports,module */
 
 /*
- * Imports
+ * IMPORTS
  */
 var path = require('path');
 var Future = require('fibers/future');
@@ -11,7 +11,7 @@ var util = require('util');
 var toArray = utils.toArray;
 
 /*
- * State
+ * STATE
  */
 var verbose = false;
 
@@ -19,23 +19,37 @@ var shell = module.exports = function shell() {
 	return shell.run.apply(null, toArray(arguments));
 };
 
-//TODO: add functions for logging
-
-shell.colors = colors; //expose colors through shell
-
-//require after defining shell!
+/*
+ * LOCAL IMPORTS
+ * 
+ * require only after defining shell!
+ */
 var command = require('./command.js');
 var repl = require('./repl.js');
 var startDir = process.cwd();
 
-/**
+/*
+ * EXPOSED VARIABLES
+ * 
  * Make sure shorthand functions are available, so that for example this can be run:
  * shell.get("ls");
  */
-//TODO: don't use singleton, its dangerous
-var emptyCommand = command();
-for(var key in emptyCommand) if (emptyCommand.hasOwnProperty(key))
-	shell[key] = emptyCommand[key];
+shell.pid = process.pid;
+shell.env = process.env;
+shell.colors = colors; 
+
+(function() {
+	var tmpCommand = command();
+	for(var key in tmpCommand) if (tmpCommand.hasOwnProperty(key) && utils.isFunction(tmpCommand[key])) {
+		shell[key] = function(key) {
+			return function() {
+				var cmd = new command();
+				return cmd[key].apply(cmd, arguments);
+			}
+		}(key); //capture key in inner-scope
+	}
+}())
+
 
 /**
  * Creates shorthand functions for invoking a command using @see shell.run. For example:
@@ -95,7 +109,3 @@ shell.cd = function(newdir) {
 	if (shell.verbose())
 		console.log(colors.cyan("> Entering " + shell.cwd()));
 };
-
-shell.pid = process.pid;
-
-//TODO: expose env
