@@ -1,4 +1,4 @@
-# nscript
+# nscript (experimental, still under heavy development)
 
 ## Javascript based shell scripting for the masses
 
