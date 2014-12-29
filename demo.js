@@ -70,6 +70,8 @@ exports = function(shell, exec, cp, cf) {
 // 6. yargs
 // 1. rename (jsrun / jsr) ?
 // 5. improve logging, use stderr.
+// 1. .npm ignore
+// 1. generated docs
 // 
 // # Later versions prip
 // 3. fileUtils isFile, isDir, isExecutable, newer(), older(), outdated()

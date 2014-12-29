@@ -1,10 +1,10 @@
 {
-  "name": "jsDo",
+  "name": "nscript",
   "version": "0.0.0",
   "description": "Javascript based shell scripting for the masses",
   "main": "src/index.js",
   "bin" : {
-    "jsdo" : "src/index.js"
+    "nscript" : "src/index.js"
   },
   "dependencies": {
     "colors": "^1.0.3",
@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mweststrate/jsDo.git"
+    "url": "https://github.com/mweststrate/nscript.git"
   },
   "keywords": [
     "shell",
@@ -28,7 +28,7 @@
   "author": "Michel Weststrate",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mweststrate/jsDo/issues"
+    "url": "https://github.com/mweststrate/nscript/issues"
   },
-  "homepage": "https://github.com/mweststrate/jsDo"
+  "homepage": "https://github.com/mweststrate/nscript"
 }
