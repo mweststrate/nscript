@@ -3,7 +3,7 @@ var colors = require('colors/safe');
 var stream = require('stream');
 var Fiber = require('fibers');
 var Future = require('fibers/future');
-var jsDo = require('./jsdo.js');
+var shell = require('./shell.js');
 
 var pauseCount = 0;
 var replServer = null;
@@ -30,7 +30,7 @@ var start = exports.start = function() {
 };
 
 function getPrompt() {
-	return "[" + jsDo.cwd() + "] $ "; //TODO: replace homedir
+	return "[" + shell.cwd() + "] $ "; //TODO: replace homedir
 }
 
 exports.prompt = function(prompt) {
@@ -57,7 +57,7 @@ exports.prompt = function(prompt) {
 	else
 		rl.close();
 
-	if (jsDo.verbose())
+	if (shell.verbose())
 		console.log(colors.gray("User input: " + line));
 	return line;
 }

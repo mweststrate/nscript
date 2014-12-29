@@ -2,9 +2,9 @@
   "name": "jsDo",
   "version": "0.0.0",
   "description": "Javascript based shell scripting for the masses",
-  "main": "src/jsdo.js",
+  "main": "src/index.js",
   "bin" : {
-    "jsdo" : "src/jsdo.js"
+    "jsdo" : "src/index.js"
   },
   "dependencies": {
     "colors": "^1.0.3",

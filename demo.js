@@ -1,12 +1,12 @@
 #!jash
 
 //jash or js2
-exports = function(jsDo, exec, cp, cf) {
-	jsDo.require(3); //3 non flagged arguments
-	jsDo.require("--bla"); //--bla should be a string
+exports = function(shell, exec, cp, cf) {
+	shell.require(3); //3 non flagged arguments
+	shell.require("--bla"); //--bla should be a string
 
-	jsDo.exit(3)
-	jsDo.prompt("ask something");
+	shell.exit(3)
+	shell.prompt("ask something");
 
 	ls("*") //returns status code
 	ls.get("*") //returns stdout
@@ -24,31 +24,31 @@ exports = function(jsDo, exec, cp, cf) {
 	ls.detach("*") //run in bg, returns pid
 
 	//Toggles
-	jsDo.silent(), //TODO: part of a command, not global
-	jsDo.verbose()
+	shell.silent(), //TODO: part of a command, not global
+	shell.verbose()
 
-	jsDo.useGlobals(); //create global functions
+	shell.useGlobals(); //create global functions
 
-	jsDo.cwd();
-	jsDo.cd(); //empty resets to begin dir
-	var ls = jsDo.wrap("ls");
+	shell.cwd();
+	shell.cd(); //empty resets to begin dir
+	var ls = shell.wrap("ls");
 
-	jsDo.pid;
+	shell.pid;
 
-	jsDo.args; //array + map
-	jsDo.args.x; //returns string value or true
-	jsDo.env.x; //
+	shell.args; //array + map
+	shell.args.x; //returns string value or true
+	shell.env.x; //
 
-	require('jsdo/globals')
+	require('shell/globals')
 
 	cat("a", "b");
 
-	jsdo.exec("ln -a")
-	jsdo.run("ln", "-a")
+	shell.exec("ln -a")
+	shell.run("ln", "-a")
 	//
-	jsdo.parseColumns(stringOrArray)
-	jsdo.parseFixedWidthColumns
-	jsdo.setColumnNames
+	shell.parseColumns(stringOrArray)
+	shell.parseFixedWidthColumns
+	shell.setColumnNames
 
 	//Globbing:
 	cat("*.js"); //expand then quote
@@ -60,11 +60,11 @@ exports = function(jsDo, exec, cp, cf) {
 //TODO
 
 // 1. -implement repl / prompt-
-// 1. implement run methods (jsdo script, node script)
+// 1. implement run methods (shell script, node script)
 // 1. tests
 // 1. -make exec sync and script work-
 // 2. -pipe, read, writeto-
-// 4. file matching jsDo.findFiles("src/**/.js*") // jsDo.findDirs
+// 4. file matching shell.findFiles("src/**/.js*") // shell.findDirs
 // 5. -colors-
 // 6. yargs
 // 1. rename (jsrun / jsr) ?

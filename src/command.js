@@ -1,4 +1,4 @@
-var jsDo = require('./jsdo.js');
+var shell = require('./shell.js');
 var spawn = require('./spawn.js');
 var fs = require('fs');
 var path = require('path');
@@ -42,8 +42,8 @@ module.exports = function command() {
 		var args = toArray(arguments);
 		var mode = args.shift();
 		var target = args.pop();
-		var filename = path.join(jsDo.cwd(), target); //TODO: expand target!
-		if (jsDo.verbose())
+		var filename = path.join(shell.cwd(), target); //TODO: expand target!
+		if (shell.verbose())
 			console.log((flags == 'w' ? '>' : '>>') + ' filename');
 		var fd = fs.openSync(filename, flags);
 		try {
@@ -85,8 +85,8 @@ module.exports = function command() {
 	};
 
 	runner.inputFile = function(source) {
-		var filename = path.join(jsDo.cwd(), source); //TODO: expand source!
-		if (jsDo.verbose())
+		var filename = path.join(shell.cwd(), source); //TODO: expand source!
+		if (shell.verbose())
 			console.log('< ' + filename);
 		nextOptions.stdin = fs.openSync(filename, 'r');
 		return runner;
