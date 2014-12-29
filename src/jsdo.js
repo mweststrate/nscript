@@ -1,4 +1,4 @@
-#!/bin/env node
+#!/usr/bin/env node
 /*
  * jsDo: javascript shell scripts for the masses
  *
@@ -11,15 +11,17 @@
  */
 var child_process = require('child_process');
 var readline = require('readline');
+var path = require('path');
 var Fiber = require('fibers');
 var Future = require('fibers/future');
 var colors = require('colors/safe');
 var utils = require('./utils.js');
+var util = require('util');
 var toArray = utils.toArray;
 /*
  * State
  */
-var verbose = true;
+var verbose = false;
 
 var jsDo = module.exports = function() {
 	return jsDo.run.apply(null, toArray(arguments));
@@ -49,11 +51,16 @@ for(var key in emptyCommand) if (emptyCommand.hasOwnProperty(key))
  */
 function runJsdoFunction(func) {
 	//parse and args
+
+	if (typeof func !== "function")
+		throw "Not a function: " + func + ", the script file should be in the form 'module.exports = function(shell) { }'";
 	var args = utils.extractFunctionArgumentNames(func);
 	args.map(jsDo.wrap);
-	args[0] = jsdo;
+	args[0] = jsDo;
 	//invoke
-	func.apply(null, args);
+	new Fiber(function() {
+		func.apply(null, args);
+	}).run();
 }
 
 /**
@@ -61,7 +68,7 @@ function runJsdoFunction(func) {
  * @param  {string} scriptFile
  */
 jsDo.runScriptFile = function(scriptFile)  {
-	runJsdoFunction(require(scriptFile)); //jsdo scripts should always export a single function that is the main
+	runJsdoFunction(require(path.resolve(process.cwd(), scriptFile))); //jsdo scripts should always export a single function that is the main
 };
 
 /**
@@ -79,7 +86,7 @@ jsDo.runScriptFile = function(scriptFile)  {
  * @param  {string} commandName [description]
  * @return {function}             [description]
  */
-jsDo.wrap = function() {
+jsDo.wrap = function() { //TODO: rename: alias
 	return command.apply(null, arguments);
 };
 
@@ -129,14 +136,19 @@ jsDo.pid = process.pid;
 
 
 
-/*
+
 if (!module.parent) {
-	if (process.argv.length > 2)
-		jsDo.runScriptFIle(process.argv[2]);
-	else
-		runJsdoFunction(new Function("jsdo", readInputStream));
+	if (process.argv.length > 2) {
+		var scripts = process.argv.slice(2);
+		for (var i = 0; i < scripts.length; i++)
+			jsDo.runScriptFile(scripts[i]); //TODO: add callback and make async, runScript cannot be run parallel
+	}
+	else {
+		jsDo.useGlobals();
+		jsDoRepl.start();
+	}
 }
-*/
+
 /*
 Fiber(function() {
 	console.log("got: " + jsDo.code("ls"));
@@ -144,8 +156,8 @@ Fiber(function() {
 */
 
 //TODO: if started without args
-jsDo.useGlobals();
-jsDoRepl.start();
+
+
 
 //chdir
 //cwd

@@ -3,9 +3,11 @@
   "version": "0.0.0",
   "description": "Javascript based shell scripting for the masses",
   "main": "src/jsdo.js",
+  "bin" : {
+    "jsdo" : "src/jsdo.js"
+  },
   "dependencies": {
     "colors": "^1.0.3",
-    "execSync": "^1.0.2",
     "fibers": "^1.0.2",
     "glob": "^4.3.2",
     "home-dir": "^0.2.0"

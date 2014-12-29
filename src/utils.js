@@ -21,7 +21,7 @@ exports.extend = function(base) {
  * @param  {Function} fn The function to reflect on
  * @return {Array}      Array of strings with the parameter names
  */
-function extractFunctionArgumentNames(fn) {
+exports.extractFunctionArgumentNames = function(fn) {
 	//http://stackoverflow.com/a/14660057
 	return fn.toString()
 		.replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s))/mg,'')

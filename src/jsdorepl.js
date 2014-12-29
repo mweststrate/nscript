@@ -5,13 +5,11 @@ var Fiber = require('fibers');
 var Future = require('fibers/future');
 var jsDo = require('./jsdo.js');
 
-
 var pauseCount = 0;
 var replServer = null;
 var supressEval = false;
 
 var start = exports.start = function() {
-	active = true;
 	replServer = repl.start({
 		prompt: getPrompt(),
 		ignoreUndefined: true,
@@ -65,7 +63,7 @@ exports.prompt = function(prompt) {
 }
 
 exports.pause = function() {
-	if (pauseCount === 0) {
+	if (replServer && pauseCount === 0) {
 		replServer.rli.pause();
 		process.stdin.setRawMode(false); //make sure Ctrl+D etc still work.
 	}
@@ -74,13 +72,13 @@ exports.pause = function() {
 
 exports.resume = function() {
 	pauseCount -= 1;
-	if (pauseCount === 0){
+	if (replServer && pauseCount === 0){
 		replServer.rli.resume();
 		process.stdin.setRawMode(true);
 	}
 };
 
 exports.updatePrompt = function() {
-	if (active)
+	if (replServer)
 		replServer.prompt = getPrompt();
 };
