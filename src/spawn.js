@@ -114,10 +114,10 @@ exports.spawn = function(commandAndArgs, opts) {
 	if (opts.blocking) {
 		var status = future.wait();
 		if (opts.throwOnError) {
-			if (status !== 0) 
+			if (status !== 0)
 				throw "Command '" + command + "' failed with status: " + status;
-			return undefined; //apparently, nobody cares.. 
-		} 
+			return undefined; //apparently, nobody cares..
+		}
 		return status;
 	}
 	else

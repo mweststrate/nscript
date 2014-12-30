@@ -28,6 +28,8 @@ module.exports = function command() {
 		return runner;
 	};
 
+	//TODO: force
+
 	runner.get = function() {
 		var buffer = "";
 		spawnHelper(toArray(arguments), {

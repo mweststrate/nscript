@@ -21,7 +21,7 @@ var shell = module.exports = function shell() {
 
 /*
  * LOCAL IMPORTS
- * 
+ *
  * require only after defining shell!
  */
 var command = require('./command.js');
@@ -38,6 +38,7 @@ shell.pid = process.pid;
 shell.env = process.env;
 shell.colors = colors;
 shell.nscript = require('./index.js'); //Function
+shell.glob = require('glob').sync;
 
 (function() {
 	var tmpCommand = command();
@@ -68,6 +69,13 @@ shell.nscript = require('./index.js'); //Function
  * @return {function}             [description]
  */
 shell.wrap = function() { //TODO: rename: alias
+	//special case: people might try to alias the cd command which is a shell built-in, not an executable
+	if (arguments[0] == "cd") {
+		var args = toArray(arguments);
+		return function(dir) {
+			return shell.cd(args.length ? args[0] : dir);
+		};
+	}
 	return command.apply(null, arguments);
 };
 
