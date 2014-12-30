@@ -1,3 +1,5 @@
+var util = require('util');
+
 exports.toArray = function(args) {
 	var res = [];
 	for (var i = 0; i < args.length; i++)
@@ -32,3 +34,17 @@ exports.extractFunctionArgumentNames = function(fn) {
 exports.isFunction = function(fn) {
 	return typeof fn === "function";
 };
+
+exports.flatten = function(ar) {
+	function flattenHelper(subset, resultset) {
+		subset.forEach(function(item) {
+			if (util.isArray(item))
+				flattenHelper(item, resultset);
+			else
+				resultset.push(item);
+		});
+	}
+	var res = [];
+	flattenHelper(ar, res);
+	return res;
+}

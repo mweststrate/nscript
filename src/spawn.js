@@ -6,13 +6,48 @@ var repl = require('./repl.js');
 var child_process = require('child_process');
 var Fiber = require('fibers');
 var Future = require('fibers/future');
-var extend = require('./utils.js').extend;
+var utils = require('./utils.js');
+var extend = utils.extend;
+var util = require('util');
+var homedir = require('home-dir').directory;
+var glob = require('glob');
 
 /*
  * State
  */
 var nextInputStream = null;
 var lastCommand = "";
+
+var expandArgument = exports.expandArgument = function(arg) {
+	//TODO: process args: bound cmd function, glob, home, quote, literal, map
+	if (arg === null || arg === undefined || typeof arg === "function")
+		throw new Error("Spawn argument should not be null or undefined or an function");
+	if (util.isArray(arg))
+		return arg;
+	if (typeof arg === "object") {
+		//translates { "--no-ff" :true, "--squash":false, "-m":"hi"} to ["--no-ff","-m","hi"]
+		var res = [];
+		for (var key in arg) { 
+			if (arg[key] !== false) {
+				res.push(key);
+				if (arg[key] !== true)
+					res.push(arg[key]);
+			}
+		}
+		return res;
+	}
+	arg = "" + arg; //cast to string
+	arg = arg.trim().replace(/^~/, homedir);
+	if (glob.hasMagic(arg)) 
+		return glob.sync(arg);
+	else 
+		return arg;
+};
+
+var expandArguments = exports.expandArguments = function(args) {
+	console.dir(args.map(expandArgument));
+	return utils.flatten(args.map(expandArgument));
+};
 
 /*
  * Methods
@@ -36,6 +71,7 @@ exports.spawn = function(commandAndArgs, opts) {
 	if (opts.onError && opts.stderr)
 		throw "onError and stderr cannot be combined!";
 
+	commandAndArgs = expandArguments(commandAndArgs);
 	var command = lastCommand = commandAndArgs.join(" ");
 	if (!opts.detached)
 		repl.pause();
