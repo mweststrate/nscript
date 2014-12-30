@@ -30,13 +30,14 @@ var startDir = process.cwd();
 
 /*
  * EXPOSED VARIABLES
- * 
+ *
  * Make sure shorthand functions are available, so that for example this can be run:
  * shell.get("ls");
  */
 shell.pid = process.pid;
 shell.env = process.env;
-shell.colors = colors; 
+shell.colors = colors;
+shell.nscript = require('./index.js'); //Function
 
 (function() {
 	var tmpCommand = command();
