@@ -4,14 +4,13 @@
 
 <span style="color:red">(experimental, still under heavy development)</span>
 
-
 [Jump to API Documentation](#api-documentation)
 
-Introduction
+## Introduction
 
 `nscript` is a node.js based shell (script) interpreter which enables writing shell scripts in javascript. `nscript` is written for those that want to rely on full flexibility of shell scripts, but don't want to be bother by all the quirks of bash (or .bat) scripts. `nscript` requires no more than basic level understanding of shell scripts and javascript. `nscript` files are structured pretty similar to shell scripts, but allow you to use javascript syntax and control structures instead of the clumsy bash syntax and structures. Furthermore they are highly interoperable with other javascript based development tools.
 
-## Getting started `nscript`
+## Getting started with `nscript`
 
 ### Installing `nscript`
 
@@ -83,26 +82,12 @@ module.exports = function(shell, echo) {
 }
 ```
 
+Commands might have multiple predefined arguments. For example, `gitAmend` could be defined as: `var gitAmend = shell.alias('git', 'commit', '--amend');`. For more details see [shell.alias](#shell-alias).
+
 A command is both a function and an object with functions. Basically, `command()` is equivalent to `command.run()`.
 
-An alias is just a command with predefined arguments. Usually one, but there can also be many predefined arguments, or none at all. Note that the following aliases and commands all return the same output:
-
-```javascript:
-var ls = shell.alias("ls");
-ls("-l", "*.js")
-
-var ll = shell.alias("ls", "-l")
-ll("*.js")
-
-var lljs = shell.alias("ls", "-l", "*.js")
-lljs();
-
-var emptyCommand = shell.alias();
-emptyCommand("ls", "-l", "*.js");
-```
-
 Several API calls return empty commands, which are not bound to any executable yet, such as `shell.inputFrom` and `command.pipe`.
-Bound arguments are always expand upon command invocation, not upon creation.
+Bound arguments are always expanded upon command invocation, not upon creation.
 
 #### command.run(args)
 
@@ -134,13 +119,13 @@ Example:
 var fileNames = ls.get("-a", "*.js").split(/\n/g);
 ```
 
-#### command.input(data)
+#### command.read(data)
 
-Upon next invocation, passes `data` as standard input to the command. The data parameter can either be a string, Buffer, InputStream or file descriptor (number). Returns the command for chaining. Note that if no `input` is set for a command that reads from STDIN, the command will read user input from the shell.
+Upon next invocation, passes `data` as standard input to the command. The data parameter can either be a string, Buffer, InputStream or file descriptor (number). Returns the command for chaining. Note that if no `read` is set for a command that reads from STDIN, the command will read user input from the shell.
 
 Example:
 ```javascript
-sort.input(["World", "Hello"].join("\n")).run();
+sort.read(["World", "Hello"].join("\n")).run();
 //prints:
 //Hello
 //World
@@ -156,9 +141,35 @@ Example:
 ls.pipe("-a").pipe("grep",".js").run("sort")
 ```
 
-#### command.inputFrom(filename)
+#### command.readFrom(filename)
+
+Similar to read; opens the file `filename` and uses it as input for the next command invocation. Returns the command for chaining.
+
+Example:
+```javascript
+//equivalent to shell command: sort < groceries.txt
+sort.readFrom('groceries.txt').run();
+```
+
 #### command.writeTo(args, filename)
+
+During the next invocation, stores the standard output of this command in a file. The argument passed to `writeTo` specifies the target filename. Returns the command for chaining.
+
+Example:
+```javascript
+//shell: sort -u -b < groceries.txt > sorted_groceries.txt
+sort.readFrom('grociers.txt').writeTo('sorted_groceries.txt').run('-u', '-b')
+```
+
 #### command.appendTo(args, filename)
+
+Similar to `command.writeTo`, but appends the target file rather than replacing it.
+
+Example:
+```javascript
+//shell: sort -u -b < groceries.txt > sorted_groceries.txt
+sort.readFrom('grociers.txt').appendTo('sorted_groceries.txt').run('-u', '-b')
+```
 
 #### command.silent()
 
@@ -172,10 +183,114 @@ Relaxes the execution of a command; do not throw an exception if the command exi
 
 Same as `command.run`, but starts the process in the background, or `detached` mode. This means that nscript will continue executing without waiting for this command to finish. Also, if nscript is done and quits, the command might still be running in the background. Detach returns the process id (pid) of the spawned process.
 
+### shell
 
+The `shell` variable passed into the nscript function contains the following utility methods that can be used in your nscript function. 
 
+Furthermore all methods defined in `command` are available in `shell` as well. For example, `shell.test(args)` is equivalent to `shell.alias().test(args)`. Besides that, shell is a function as well, `shell(args)` is equivalent to `shell.run(args)`. 
 
-### Shell
+#### shell.alias(boundArgs)
+
+An alias creates a new `command` with predefined arguments. Usually one, but there can also be many predefined arguments, or none at all. 
+
+Note that the following aliases and commands all return the same output:
+
+```javascript:
+var ls = shell.alias("ls");
+ls("-l", "*.js")
+
+var ll = shell.alias("ls", "-l")
+ll("*.js")
+
+var lljs = shell.alias("ls", "-l", "*.js")
+lljs();
+
+var emptyCommand = shell.alias();
+emptyCommand("ls", "-l", "*.js");
+```
+
+`nscript` injects aliases automatically for all variables that do not start with a `$` into the nscript function:
+```javascript:
+module.exports = function(shell, echo) { 
+    echo("hi") //echo has been created using shell.alias('echo') automatically
+}
+```
+
+#### shell.exit(exitCode)
+
+Stops the current script with the specified exit code. This is exactly the same as `process.exit`. 
+
+#### shell.cwd()
+
+Returns the current working directory of the script. Initially, this is the directory from which the script was started, and also the current working directory of any spawned commands. 
+
+#### shell.cd(dir)
+
+Changes the current working directory. `dir` can be relative to the current working directory, or absolute. If dir starts with `~` it is interpreted as relative to the users home directory. If no dir is passed to the `cd` function, `cd` resets to directory in which the script originally started. 
+
+#### shell.prompt(prompt)
+
+Aks the user for input. The function returns as soon as the user confirms his input with the return key. For example:
+
+```javascript
+module.exports = function(shell, rm, $0) {
+    if (prompt("Are you sure you want to remove " + $0 + "? [y/n]") == "y")
+        rm("-rf", $0)
+    else
+        console.log("cancelled.")
+}
+```
+
+#### shell.lastExitCode
+
+Holds the exit code of the last command that was invoked. Commands that are invoked using `pipe` or `detach` will not update this property. Useful in combination `relax` and `get`. Example:
+
+```javascript
+module.exports = function(shell, grep) {
+    //get all lines that contain milk
+    var results = grep.relax().readFile('grociers').get('milk');
+    //if there is no match, grep exits with `1` by default
+    if (shell.lastExitCode !== 0)
+        console.log("Don't forget the milk!")
+}
+```
+
+#### shell.pid
+
+The process id of this script, this is the same as `process.pid`.
+
+#### shell.env
+
+The environment variables passed by the OS to this scripts. For example `shell.env.HOME` returns "/home/michel" on my machine. This is an alias for `process.env`
+
+#### shell.colors
+
+Shell.colors can be used to print colored output. For example: `console.log(shell.colors.red("Print this in red"))`. For more details, check the documentation of the [colors](https://www.npmjs.com/package/colors) packages. 
+
+#### shell.nscript(nscriptFunction)
+
+Runs a nscript function. This is convenient if you want to create local aliases, for example:
+
+```javascript
+module.exports = function(shell, echo) {
+    shell.nscript(shell, whoami) {
+        echo("Hello, ");
+        whoami(); //prints current user name
+    });
+}
+```
+
+#### shell.glob(pattern, opts)
+
+Performs file globbing on the current directory. For example: `shell.glob("**/*.js")` returns a string array of all javascript files relative to the current directory. Powered by the excellent [glob](https://www.npmjs.com/package/glob) package.
+
+#### shell.verbose(boolean)
+
+If set to true, `nscript` will print lots of debug input. Call `shell.verbose()` without arguments to get the current value. 
+
+#### shell.useGlobals()
+
+If invoked, all methods and properties of `shell` will be added to the global scope. After the invocation, you can use `run(args)` instead of `shell.run(args)` for example. 
 
 ### nscript function arguments
 
