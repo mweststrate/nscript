@@ -1,6 +1,45 @@
 # nscript (experimental, still under heavy development)
 
-## Javascript based shell scripting for the masses
+*Javascript based shell scripting for the masses*
+
+[Jump to API Documentation](#api-documentation)
+
+Introduction
+
+`nscript` is a node.js based shell (script) interpreter which enables writing shell scripts in javascript. `nscript` is written for those that want to rely on full flexibility of shell scripts, but don't want to be bother by all the quirks of bash (or .bat) scripts. `nscript` requires no more than basic level understanding of shell scripts and javascript.
+
+## Getting started `nscript`
+
+### Installing `nscript`
+
+### Running hello world
+
+## Anatonomy of a `nscript` function
+
+
+## API Documentation
+
+### nscript `commands`
+
+### nscript `shell`
+
+## Future plans
+
+## Different ways of running `nscript` functions
+
+### As standalone script
+
+#### Running with `nscript`
+
+#### Running with `node` (a.k.a. `local` script)
+
+#### Running from other scripts
+
+## Comparison to other tools.
+
+### Grunt
+
+Grunt allows for high level declaritive writing of tasks. However, spawning new jobs, grabbing there output or using pipes and stdin/ stdout streams can not be done out of the box. Luckily, `nscript` can be used from within grunt scripts as well, so feel free to combine the best of both worlds! Or feel free to write a grunt-nscript plugin ;-).
 
 # Getting started
 
