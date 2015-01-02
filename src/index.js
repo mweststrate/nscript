@@ -22,7 +22,7 @@ var runNscriptFunction = module.exports = function(func) {
 	if (typeof func !== "function")
 		throw "Not a function: " + func + ", the script file should be in the form 'module.exports = function(shell) { }'";
 	var args = utils.extractFunctionArgumentNames(func);
-	args.map(shell.wrap);
+	args = injectArguments(args, [].concat(scriptArgs));
 	args[0] = shell;
 	//invoke
 	new Fiber(function() {
@@ -30,19 +30,102 @@ var runNscriptFunction = module.exports = function(func) {
 		if (shell.verbose())
 			console.log("Finished in " + process.uptime() + " seconds");
 	}).run();
-}
+};
 
 /*
  * Local imports after defining module.exports
  */
 var shell = require('./shell.js');
 var repl = require('./repl.js');
+var scriptArgs = process.argv.slice(2); //remove node, scriptfile
+
+var injectArguments = runNscriptFunction.injectArguments = function(argNames, varArgs) {
+	var argValues = new Array(argNames.length);
+	var secondPass = false;
+	var validOptions = [];
+	var argsRequired = -1;
+	
+	//TODO: support predefined --verbose --change-dir --help --version
+	function onArg(argName, index) {
+		var idxMatch = argName.match(/^\$(\d+)$/);
+		var paramMatch = argName.match(/^\$\$([A-Za-z0-9_-]+)$/);
+		var flagMatch = argName.match(/^\$([A-Za-z0-9_-]+)$/);
+		var paramName, idx;
+
+		//always pass in shell as first
+		if (index === 0) {
+			if (secondPass)
+				argValues[index] = shell;
+		}
+		//$args returns all remaining args
+		else if (argName === "$args") {
+			if (secondPass)
+				argValues[index] = varArgs;
+		}
+		//$3 returns the 3th vararg
+		else if (idxMatch) {
+			if (secondPass)
+				argValues[index] = varArgs[idxMatch[1]];
+			else
+				argsRequired = Math.max(argsRequired, idxMatch[1]);
+		}
+		//$$myArg should parse --my-arg value
+		else if (paramMatch) {
+			if (!secondPass) {
+				paramName = utils.hyphenate(paramMatch[1]);
+				validOptions.push(paramName + " [value]");
+				idx = varArgs.indexOf(paramName);
+				if (idx != -1) {
+					argValues[index] = varArgs[idx + 1];
+					varArgs.splice(idx, 2);
+				}
+			}
+		}
+		//$myFlag should parse --my-flag to true
+		else if (flagMatch) {
+			if (!secondPass) {
+				paramName = utils.hyphenate(flagMatch[1]);
+				validOptions.push(paramName);
+				idx = varArgs.indexOf(paramName);
+				argValues[index] = idx != -1;
+				if (idx != -1)
+					varArgs.splice(idx, 1);
+			}
+		}
+		else if (argName.indexOf('$') === 0)
+			throw "Invalid parametername in nscript function: '" + argName + "', please check the nscript docs for valid parameter names";
+		else if (secondPass)
+			argValues[index] = shell.alias(argName);
+	}
+
+	varArgs = utils.normalizeCliFlags(varArgs);
+
+	//parse all params and flags
+	argNames.forEach(onArg);
+	//remaining values should not be flags
+	varArgs.forEach(function(arg) {
+		//script variadic argument values should not start with a hyphen. Rly? yeah, try to touch or git add a file named '-p' for exampe :-P
+		if (arg.indexOf("-") === 0)
+			throw "Invalid option '" + arg + "'. Valid options are: " + validOptions.join(", ");
+	});
+	if (varArgs.length <= argsRequired)
+		throw "Missing arguments. Expected at least " + (argsRequired + 1) + " argument(s), found: '" + varArgs.join(' ') + "'";
+	//variadic arguments can only be determined reliable after parsing the named args
+	secondPass = true;
+	argNames.forEach(onArg);
+
+	return argValues;
+};
 
 /**
  * Runs a file that contains a nscript script
  * @param  {string} scriptFile
  */
 function runScriptFile(scriptFile)  {
+	//node gets the node arguments, the nscript arguments and the actual script args combined. Slice all node and nscript args away!
+	scriptArgs = scriptArgs.slice(scriptArgs.indexOf(scriptFile) + 1);
+	console.log("Starting nscript " + scriptFile + scriptArgs.join(" "));
+
 	runNscriptFunction(require(path.resolve(process.cwd(), scriptFile))); //nscript scripts should always export a single function that is the main
 }
 

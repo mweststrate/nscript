@@ -47,4 +47,33 @@ exports.flatten = function(ar) {
 	var res = [];
 	flattenHelper(ar, res);
 	return res;
-}
+};
+
+exports.hyphenate = function(name) {
+	return (name.length == 1 ? "-" : "--") + name.replace(/[^A-Za-z0-9]+/g, "-").replace(/([a-z])([A-Z])/g, function(_, l, r) {
+		return l + "-" + r.toLowerCase();
+	});
+};
+
+/**
+ * changes ["abc', "-abc", "def"] to ["abc", "-a", "-b", "-c", "def"]
+ * @param  {[type]} args [description]
+ * @return {[type]}      [description]
+ */
+exports.normalizeCliFlags = function(args) {
+	var res = [];
+	args.forEach(function(arg) {
+		var combinedFlags = arg.match(/^-(\w+)$/);
+		if (combinedFlags)
+			res = res.concat(combinedFlags[1].split('').map(function(x) { return "-" + x; }));
+		else
+			res.push(arg);
+	});
+	return res;
+};
+
+exports.tail = function(ar) {
+	var res = [].concat(ar);
+	res.shift();
+	return res;
+};
