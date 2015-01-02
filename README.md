@@ -6,6 +6,60 @@
 
 [Jump to API Documentation](#api-documentation)
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+
+- [nscript](#nscript)
+  - [Introduction](#introduction)
+  - [Getting started with `nscript`](#getting-started-with-nscript)
+    - [Installing `nscript`](#installing-nscript)
+    - [Creating and running your first script](#creating-and-running-your-first-script)
+  - [Anatonomy of a `nscript`](#anatonomy-of-a-nscript)
+    - [Main `nscript` concepts](#main-nscript-concepts)
+  - [API Documentation](#api-documentation)
+    - [Command](#command)
+      - [command.run(args)](#commandrunargs)
+      - [command.code(args)](#commandcodeargs)
+      - [command.test(args)](#commandtestargs)
+      - [command.get(args)](#commandgetargs)
+      - [command.read(data)](#commandreaddata)
+      - [command.pipe(args)](#commandpipeargs)
+      - [command.readFrom(filename)](#commandreadfromfilename)
+      - [command.writeTo(args, filename)](#commandwritetoargs-filename)
+      - [command.appendTo(args, filename)](#commandappendtoargs-filename)
+      - [command.silent()](#commandsilent)
+      - [command.relax()](#commandrelax)
+      - [command.boundArgs](#commandboundargs)
+      - [command.detach(args)](#commanddetachargs)
+    - [shell](#shell)
+      - [shell.alias(boundArgs)](#shellaliasboundargs)
+      - [shell.exit(exitCode)](#shellexitexitcode)
+      - [shell.cwd()](#shellcwd)
+      - [shell.cd(dir)](#shellcddir)
+      - [shell.prompt(prompt)](#shellpromptprompt)
+      - [shell.lastExitCode](#shelllastexitcode)
+      - [shell.pid](#shellpid)
+      - [shell.env](#shellenv)
+      - [shell.colors](#shellcolors)
+      - [shell.nscript(nscriptFunction)](#shellnscriptnscriptfunction)
+      - [shell.glob(pattern, opts)](#shellglobpattern-opts)
+      - [shell.verbose(boolean)](#shellverboseboolean)
+      - [shell.useGlobals()](#shelluseglobals)
+    - [nscript function arguments](#nscript-function-arguments)
+    - [command argument expansion](#command-argument-expansion)
+  - [nscript CLI arguments](#nscript-cli-arguments)
+  - [Future plans](#future-plans)
+  - [Different ways of running `nscript` functions](#different-ways-of-running-nscript-functions)
+    - [As standalone script](#as-standalone-script)
+      - [Running with `nscript`](#running-with-nscript)
+      - [Running with `node` (a.k.a. `local` script)](#running-with-node-aka-local-script)
+      - [Running from other scripts](#running-from-other-scripts)
+  - [Comparison to other tools.](#comparison-to-other-tools)
+    - [Grunt](#grunt)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Introduction
 
 `nscript` is a node.js based shell (script) interpreter which enables writing shell scripts in javascript. `nscript` is written for those that want to rely on full flexibility of shell scripts, but don't want to be bother by all the quirks of bash (or .bat) scripts. `nscript` requires no more than basic level understanding of shell scripts and javascript. `nscript` files are structured pretty similar to shell scripts, but allow you to use javascript syntax and control structures instead of the clumsy bash syntax and structures. Furthermore they are highly interoperable with other javascript based development tools.
@@ -199,7 +253,7 @@ An alias creates a new `command` with predefined arguments. Usually one, but the
 
 Note that the following aliases and commands all return the same output:
 
-```javascript:
+```javascript
 var ls = shell.alias("ls");
 ls("-l", "*.js")
 
@@ -214,7 +268,7 @@ emptyCommand("ls", "-l", "*.js");
 ```
 
 `nscript` injects aliases automatically for all variables that do not start with a `$` into the nscript function:
-```javascript:
+```javascript
 module.exports = function(shell, echo) {
     echo("hi") //echo has been created using shell.alias('echo') automatically
 }
@@ -343,10 +397,6 @@ The following arguments can be passed to the `nscript` script.
 * `--local` in combination with --touch or -x; do not use global nscript, but the one provided in the embedding npm package
 
 
-## Future plans
-
-1. Windows support
-2. Rely on child_process.spawnSync instead of fibers for synchronous executing.
 
 ## Different ways of running `nscript` functions
 
@@ -371,6 +421,8 @@ hello world
 
 #### Running with `node` (a.k.a. `local` script)
 
+This option does not require `nscript` to be installed globally.
+
 ```javacript
 #!/usr/bin/env node
 require('nscript')(function(shell) {
@@ -386,15 +438,21 @@ hello world
 ```
 
 #### Running from other scripts
+
+This option does not require `nscript` to be installed globally.
+
 ```
 $ npm install nscript --save
 ```
 
 ```javacript
-require('nscript')(function(shell) {
-	shell("echo",`"hello", "world");
-});
+require('nscript')(require('./script.js'));
 ```
+
+## Future plans
+
+1. Windows support
+2. Rely on child_process.spawnSync instead of fibers for synchronous executing.
 
 ## Comparison to other tools.
 
