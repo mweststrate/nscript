@@ -179,19 +179,23 @@ Suppresses the command output during the next invocation; output is no longer pr
 
 Relaxes the execution of a command; do not throw an exception if the command exits with a non-zero exit status upon next invocation. Returns the command for easy chaining.
 
+#### command.boundArgs
+
+Returns an array; the original args with which this command was constructed: `shell.alias("git", "commit").boundArgs == ["git", "commit"]`
+
 #### command.detach(args)
 
 Same as `command.run`, but starts the process in the background, or `detached` mode. This means that nscript will continue executing without waiting for this command to finish. Also, if nscript is done and quits, the command might still be running in the background. Detach returns the process id (pid) of the spawned process.
 
 ### shell
 
-The `shell` variable passed into the nscript function contains the following utility methods that can be used in your nscript function. 
+The `shell` variable passed into the nscript function contains the following utility methods that can be used in your nscript function.
 
-Furthermore all methods defined in `command` are available in `shell` as well. For example, `shell.test(args)` is equivalent to `shell.alias().test(args)`. Besides that, shell is a function as well, `shell(args)` is equivalent to `shell.run(args)`. 
+Furthermore all methods defined in `command` are available in `shell` as well. For example, `shell.test(args)` is equivalent to `shell.alias().test(args)`. Besides that, shell is a function as well, `shell(args)` is equivalent to `shell.run(args)`.
 
 #### shell.alias(boundArgs)
 
-An alias creates a new `command` with predefined arguments. Usually one, but there can also be many predefined arguments, or none at all. 
+An alias creates a new `command` with predefined arguments. Usually one, but there can also be many predefined arguments, or none at all.
 
 Note that the following aliases and commands all return the same output:
 
@@ -211,22 +215,22 @@ emptyCommand("ls", "-l", "*.js");
 
 `nscript` injects aliases automatically for all variables that do not start with a `$` into the nscript function:
 ```javascript:
-module.exports = function(shell, echo) { 
+module.exports = function(shell, echo) {
     echo("hi") //echo has been created using shell.alias('echo') automatically
 }
 ```
 
 #### shell.exit(exitCode)
 
-Stops the current script with the specified exit code. This is exactly the same as `process.exit`. 
+Stops the current script with the specified exit code. This is exactly the same as `process.exit`.
 
 #### shell.cwd()
 
-Returns the current working directory of the script. Initially, this is the directory from which the script was started, and also the current working directory of any spawned commands. 
+Returns the current working directory of the script. Initially, this is the directory from which the script was started, and also the current working directory of any spawned commands.
 
 #### shell.cd(dir)
 
-Changes the current working directory. `dir` can be relative to the current working directory, or absolute. If dir starts with `~` it is interpreted as relative to the users home directory. If no dir is passed to the `cd` function, `cd` resets to directory in which the script originally started. 
+Changes the current working directory. `dir` can be relative to the current working directory, or absolute. If dir starts with `~` it is interpreted as relative to the users home directory. If no dir is passed to the `cd` function, `cd` resets to directory in which the script originally started.
 
 #### shell.prompt(prompt)
 
@@ -265,7 +269,7 @@ The environment variables passed by the OS to this scripts. For example `shell.e
 
 #### shell.colors
 
-Shell.colors can be used to print colored output. For example: `console.log(shell.colors.red("Print this in red"))`. For more details, check the documentation of the [colors](https://www.npmjs.com/package/colors) packages. 
+Shell.colors can be used to print colored output. For example: `console.log(shell.colors.red("Print this in red"))`. For more details, check the documentation of the [colors](https://www.npmjs.com/package/colors) packages.
 
 #### shell.nscript(nscriptFunction)
 
@@ -286,19 +290,63 @@ Performs file globbing on the current directory. For example: `shell.glob("**/*.
 
 #### shell.verbose(boolean)
 
-If set to true, `nscript` will print lots of debug input. Call `shell.verbose()` without arguments to get the current value. 
+If set to true, `nscript` will print lots of debug input. Call `shell.verbose()` without arguments to get the current value.
 
 #### shell.useGlobals()
 
-If invoked, all methods and properties of `shell` will be added to the global scope. After the invocation, you can use `run(args)` instead of `shell.run(args)` for example. 
+If invoked, all methods and properties of `shell` will be added to the global scope. After the invocation, you can use `run(args)` instead of `shell.run(args)` for example.
 
 ### nscript function arguments
 
-### nscript command parameters
+An nscript function can define many parameters which will be injected by nscript upon navigation. For example given the following script `myscript.js`:
 
-## `nscript` interactive shell
+```javascript
+module.exports = function(shell, cp, echo, $verbose, $r, $c, $$changeDir, $args, $1, $2) {
+	//code
+}
+```
+
+Based on the name of the parameters, `nscript` injects values as follows upon calling the function:
+
+1. The first argument will always be the `shell` object, regardless the name of that variable.
+2. If a parameter names starts with a dollar sign (`$`), its value will be true if a similarly named flag was provided to the script. In the example above: if the script was invoked as `./myscript.js --verbose`, the `$verbose` variable will be `true` in the script.
+3. If a parameter name that starts with a dollar sign is only one character long, short options can be used, for example: `./myscript.js -rc` will make both the variables `$r` and `$c` true.
+4. If a parameter name starts with a double dollar sign (`$$`), the value of the variable will hold the value of the specified parameter with which the script was invoked. For example, in `./myscript --change-dir /usr/bin` the variable `$$changeDir` will have the value `"/usr/bin"`
+5. If the parameter is named `$args`, it will hold all parameters that where passed to the script that have not been matched by another flag or parameter. For example: `./myscript.js file1.txt -c --change-dir file2.txt file3.txt` will yield the value `["file1.txt", "file3.txt"]` for `$args`.
+6. If the parameter is named `$0`, `$1`, ..etc, its value will be the value of the specified index in `$args`, so in the previous example, `$2` will have the value `"file3.txt"`.
+
+`nscript` keeps parameter parsing on purpose quite simple. If you want to have more flexibility; use the `commander` or `yargs` packages, they both provide excellent and sophisticated command line arguments parsing.
+
+### command argument expansion
+
+
+`nscript` automatically expands values passed into a command, just as the shell does. For variable expansion the following rules are applied.
+
+1. `"~"` is replaced by the home directory; `ls("~/bin")` will be translated to the actual command `ls /home/michel/bin`.
+2. `"*"`, `"**"` and similar [globbing patterns](https://github.com/isaacs/node-glob#glob-primer) will be applied before invoking the command. Note that these globbing patterns are even more powerful than in most shell! `cat("**/*.js")` will translate into (for example) `cat index.js test.js lib/command.js lib/utils/test/command.js` etc etc.
+3. Maps will be translated into script flags. The keys will be hyphenated. Values should be either booleans (flag present) or strings (named parameter). For example: `git("merge", { squash : false, noFf : true, m : "hi"})` will translate to `git merge --no-ff -m "hi"`
+4. Arrays will be turned into flat lists, but no variable expanse will be applied to the values.
+5. To pass a value literally to a command, just use an array. For example `rm("*.js")` might translate into `rm a.js b.js`, whereas `grep(["*.js"])` translates into `grep *.js` (instead of `grep a.js b.js`!)
+
+## nscript CLI arguments
+
+The following arguments can be passed to the `nscript` script.
+
+* `nscript`: starts an `nscript` REPL, this is very useful for testing. (It is very similar to running `node`). All `shell` operations will be directly available on the command line.
+* `nscript [filename]` will execut the specified script at `filename` and quite.
+* `-h` or `--help` will print the help.
+* `-V` or `--version` will print the currently installed version of `nscript`
+* `-v` or `--verbose` will explain in great detail which command `nscript` is executing during a script run. Similar to callling `shell.verbose(true)` inside the script.
+* `-C [path]` or `--chdir [path]` will change the working directory of the script before starting. Similar to call `shell.cd("path")` inside the script.
+* `--touch [path]` create a new `nscript` file at the specified location and make it executable
+* `-x <path>` make sure the nscript file at the specified location is executable. On unix, `chmod +x` will be used, in windows a similarly named `.bat` file will be created.
+* `--local` in combination with --touch or -x; do not use global nscript, but the one provided in the embedding npm package
+
 
 ## Future plans
+
+1. Windows support
+2. Rely on child_process.spawnSync instead of fibers for synchronous executing.
 
 ## Different ways of running `nscript` functions
 
@@ -306,9 +354,47 @@ If invoked, all methods and properties of `shell` will be added to the global sc
 
 #### Running with `nscript`
 
+Script file:
+
+```javacript
+#!/usr/bin/nscript
+module.exports = function(shell) {
+	shell("echo", "hello", "world");
+}
+```
+
+```
+$ chmod +x script.js
+$ ./script.js
+hello world
+```
+
 #### Running with `node` (a.k.a. `local` script)
 
+```javacript
+#!/usr/bin/env node
+require('nscript')(function(shell) {
+	shell("echo", "hello", "world");
+});
+```
+
+```
+$ chmod +x script.js
+$ npm install nscript --save
+$ ./script.js
+hello world
+```
+
 #### Running from other scripts
+```
+$ npm install nscript --save
+```
+
+```javacript
+require('nscript')(function(shell) {
+	shell("echo",`"hello", "world");
+});
+```
 
 ## Comparison to other tools.
 
@@ -316,5 +402,4 @@ If invoked, all methods and properties of `shell` will be added to the global sc
 
 Grunt allows for high level declaritive writing of tasks. However, spawning new jobs, grabbing there output or using pipes and stdin/ stdout streams can not be done out of the box. Luckily, `nscript` can be used from within grunt scripts as well, so feel free to combine the best of both worlds! Or feel free to write a grunt-nscript plugin ;-).
 
-# Getting started
 
