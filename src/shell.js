@@ -53,22 +53,24 @@ shell.glob = require('glob').sync;
 }())
 
 
+//TODO: lastExitCode
+
 /**
  * Creates shorthand functions for invoking a command using @see shell.run. For example:
  * `shell.exec("ls","-a")`
  * can be written as
  *
  * ```
- * var ls = shell.wrap("ls")
+ * var ls = shell.alias("ls")
  * ls("-a")
  * ```
  *
- * Multiple arguments can be bound, for example: `var pull = shell.wrap("git","pull");`
+ * Multiple arguments can be bound, for example: `var pull = shell.alias("git","pull");`
  *
  * @param  {string} commandName [description]
  * @return {function}             [description]
  */
-shell.wrap = function() { //TODO: rename: alias
+shell.alias = function() {
 	//special case: people might try to alias the cd command which is a shell built-in, not an executable
 	if (arguments[0] == "cd") {
 		var args = toArray(arguments);
@@ -76,6 +78,7 @@ shell.wrap = function() { //TODO: rename: alias
 			return shell.cd(args.length ? args[0] : dir);
 		};
 	}
+	//TODO: check existence of command
 	return command.apply(null, arguments);
 };
 

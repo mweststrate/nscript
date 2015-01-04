@@ -13,7 +13,7 @@ var program = require('commander');
 var fs = require('fs');
 
 /**
- * Runs a function using nscript. Params will be wrapped @see nscript.wrap based on their name, except for the first one, which will be replaced by nscript itself.
+ * Runs a function using nscript. Params will be aliased @see nscript.alias based on their name, except for the first one, which will be replaced by nscript itself.
  * @param  {function} func
  */
 var runNscriptFunction = module.exports = function(func) {
@@ -44,7 +44,7 @@ var injectArguments = runNscriptFunction.injectArguments = function(argNames, va
 	var secondPass = false;
 	var validOptions = [];
 	var argsRequired = -1;
-	
+
 	//TODO: support predefined --verbose --change-dir --help --version
 	function onArg(argName, index) {
 		var idxMatch = argName.match(/^\$(\d+)$/);
@@ -124,7 +124,8 @@ var injectArguments = runNscriptFunction.injectArguments = function(argNames, va
 function runScriptFile(scriptFile)  {
 	//node gets the node arguments, the nscript arguments and the actual script args combined. Slice all node and nscript args away!
 	scriptArgs = scriptArgs.slice(scriptArgs.indexOf(scriptFile) + 1);
-	console.log("Starting nscript " + scriptFile + scriptArgs.join(" "));
+	if (shell.verbose())
+		console.log("Starting nscript " + scriptFile + scriptArgs.join(" "));
 
 	runNscriptFunction(require(path.resolve(process.cwd(), scriptFile))); //nscript scripts should always export a single function that is the main
 }
@@ -172,7 +173,7 @@ var version = exports.version = require('../package.json').version;
 if (!module.parent) {
 	program
 		.version(version)
-		.usage('[options] <files...>')
+		.usage('[options] <file>')
 		.option('-C, --chdir <path>', 'change the working directory')
 		.option('-v, --verbose', 'start in verbose mode')
 		.option('--touch <path>', 'create a new nscript file at the specified location and make it executable')
@@ -191,9 +192,8 @@ if (!module.parent) {
 	else if (program.X) //MWE: unsure why X is upercased here...
 		makeExecutable(program.X, program.local);
 	else if (process.argv.length > 2) {
-		var scripts = program.args;
-		for (var i = 0; i < scripts.length; i++)
-			runScriptFile(scripts[i]); //TODO: add callback and make async, runScript cannot be run parallel
+		var script = program.args[0];
+		runScriptFile(script);
 	}
 	else {
 		shell.useGlobals();

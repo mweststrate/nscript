@@ -8,6 +8,7 @@ var Fiber = require('fibers');
 var Future = require('fibers/future');
 var utils = require('./utils.js');
 var extend = utils.extend;
+//TODO: replace util imports with utils
 var util = require('util');
 var homedir = require('home-dir').directory;
 var glob = require('glob');
@@ -27,25 +28,24 @@ var expandArgument = exports.expandArgument = function(arg) {
 	if (typeof arg === "object") {
 		//translates { "--no-ff" :true, "--squash":false, "-m":"hi"} to ["--no-ff","-m","hi"]
 		var res = [];
-		for (var key in arg) { 
+		for (var key in arg) {
 			if (arg[key] !== false) {
-				res.push(key);
+				res.push(utils.hyphenate(key));
 				if (arg[key] !== true)
-					res.push(arg[key]);
+					res.push(arg[key]); //TODO: expand value!
 			}
 		}
 		return res;
 	}
 	arg = "" + arg; //cast to string
 	arg = arg.trim().replace(/^~/, homedir);
-	if (glob.hasMagic(arg)) 
+	if (glob.hasMagic(arg))
 		return glob.sync(arg);
-	else 
+	else
 		return arg;
 };
 
 var expandArguments = exports.expandArguments = function(args) {
-	console.dir(args.map(expandArgument));
 	return utils.flatten(args.map(expandArgument));
 };
 
@@ -107,8 +107,10 @@ exports.spawn = function(commandAndArgs, opts) {
 			console.log(shell.colors.bold(shell.colors[code === 0 ? 'green' : 'red']("Finished with exit code: " + code)));
 		if (!opts.detached)
 			repl.resume();
-		if (opts.blocking)
+		if (opts.blocking) {
+			//TODO: update lastExitCode
 			future.return(code);
+		}
 	});
 
 	if (opts.blocking) {

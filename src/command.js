@@ -17,6 +17,7 @@ module.exports = function command() {
 		return spawn.spawn(baseArgs.concat(args), opts);
 	}
 
+	//TODO: rename runner to command
 	var runner = function() {
 		return spawnHelper(toArray(arguments));
 	};
@@ -28,7 +29,7 @@ module.exports = function command() {
 		return runner;
 	};
 
-	//TODO: force
+	//TODO: force / noFail / or whatever it is called
 
 	runner.get = function() {
 		var buffer = "";
@@ -40,6 +41,8 @@ module.exports = function command() {
 		return buffer;
 	};
 
+	//TODO: getLines, getAll
+
 	function outputToFile(flags) {
 		var args = toArray(arguments);
 		var mode = args.shift();
@@ -49,7 +52,7 @@ module.exports = function command() {
 			console.log((flags == 'w' ? '>' : '>>') + ' filename');
 		var fd = fs.openSync(filename, flags);
 		try {
-			//TODO: writeTo / appendTo should not invoke the actual command ??
+			//TODO: writeTo / appendTo should not invoke the actual command, but chain. Check that stdout isn't defined yet!
 			return spawnHelper(args, { stdout : fd });
 		} finally {
 			fs.closeSync(fd);
@@ -59,6 +62,7 @@ module.exports = function command() {
 	runner.writeTo = outputToFile.bind(null, 'w');
 	runner.appendTo = outputToFile.bind(null, 'a');
 
+	//TODO: runner.getOutputStream()
 	runner.pipe = function() {
 		var child = spawnHelper(toArray(arguments), {
 			blocking: false,
@@ -70,7 +74,8 @@ module.exports = function command() {
 		//TODO: add guard that input / inputFile isn't called!
 	};
 
-	runner.input = function(input) {
+	runner.read = function(input) {
+		//TODO: check stdin not setyet
 		if (typeof(input) == "number" || (input && input.pipe)) {
 			nextOptions.stdin = input;
 		}
@@ -83,10 +88,11 @@ module.exports = function command() {
 			};
 			nextOptions.stdin = bufferStream;
 		}
-		return this;
+		return runner;
 	};
 
-	runner.inputFile = function(source) {
+	runner.readFrom = function(source) {
+		//TODO: check stdin not setyet
 		var filename = path.join(shell.cwd(), source); //TODO: expand source!
 		if (shell.verbose())
 			console.log('< ' + filename);
@@ -101,7 +107,7 @@ module.exports = function command() {
 	};
 
 	runner.test = function() {
-		return this.code.apply(this, arguments) === 0;
+		return runner.code.apply(this, arguments) === 0;
 	};
 
 	runner.detach = function() {
@@ -114,6 +120,8 @@ module.exports = function command() {
 		console.log("[+] " + child.pid);
 		return child.pid;
 	};
+
+	runner.boundArgs = baseArgs;
 
 	return runner;
 };

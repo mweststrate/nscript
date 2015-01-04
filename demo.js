@@ -65,14 +65,20 @@ exports = function(shell, exec, cp, cf) {
 // 1. tests
 // 1. -make exec sync and script work-
 // 2. -pipe, read, writeto-
-// 4. file matching shell.findFiles("src/**/.js*") // shell.glob
+// 4. -file matching shell.findFiles("src/**/.js*")- // shell.glob
 // 5. -colors-
 // 6. yargs
-// 1. rename (jsrun / jsr) ?
+// 6. top level globals?
+// 6. nscript this = shell instead of first argument?
+// 6. rename src/ -> lib/
+// 7. publish 'nscript/shell'
+// 1. -rename (jsrun / jsr) ?-
+// 1. move test/scripts to demo/
 // 5. improve logging, use stderr.
 // 1. .npm ignore
 // 1. generated docs
-// 
+// 1. windows support
+//
 // # Later versions prip
 // 3. fileUtils isFile, isDir, isExecutable, newer(), older(), outdated()
 // 7. grunt plugins?

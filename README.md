@@ -1,10 +1,37 @@
 # nscript
 
-*Javascript based shell scripting for the masses*
+*Javascript powered shell scripts*
 
 <span style="color:red">(experimental, still under heavy development)</span>
 
-[Jump to API Documentation](#api-documentation)
+*Writing shell scripts is hard. But if a program just takes some input and generates some output, a **program** could be considered  a **function**. Invoking functions and reasoning about parameters and return values is a very natural thing to do in any GPL, such as **javascript**. So lets start writing shell scripts in javascript. Without any further introduction, I hereby present you `nscript`:*
+
+```javascript
+/* Publish.js */
+module.exports = function(shell, npm) {
+	var package = require('package.json');
+	if (shell.prompt("Are you sure you want to publish " + package.name + " version " + package.version + " to the NPM package repository? [y/n]") === "y") {
+		if (npm.test("info", package.name)) {
+			//package is registered in npm
+			var publishedPackageInfo = JSON.parse(npm.get("info", package.name));
+			if (publishedPackageInfo.versions == package.version || publishedPackageInfo.versions.indexOf(package.version) != -1) {
+				console.error("Version " + package.version + " is already published to npm")
+				shell.exit(1);
+			}
+		}
+		npm("publish");
+		console.log("Published!")
+	}
+	else
+		console.log("Cancelled")
+}
+```
+
+```bash
+$ nscript publish.js
+Are you sure you want to publish nscript version 0.0.2 to the NPM package repository? [y/n]: y
+Published!
+```
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -62,7 +89,7 @@
 
 ## Introduction
 
-`nscript` is a node.js based shell (script) interpreter which enables writing shell scripts in javascript. `nscript` is written for those that want to rely on full flexibility of shell scripts, but don't want to be bother by all the quirks of bash (or .bat) scripts. `nscript` requires no more than basic level understanding of shell scripts and javascript. `nscript` files are structured pretty similar to shell scripts, but allow you to use javascript syntax and control structures instead of the clumsy bash syntax and structures. Furthermore they are highly interoperable with other javascript based development tools.
+`nscript` is a node.js based shell (script) interpreter which enables writing shell scripts in javascript. `nscript` is written for those that want to rely on full flexibility of shell scripts, but don't want to be bother by all the quirks of bash (or .bat) scripts. `nscript` requires no more than basic level understanding of shell scripts and javascript. `nscript` files are structured pretty similar to shell scripts, but allow you to use javascript syntax and control structures instead of the clumsy [ba/c/z]sh syntax and structures. Furthermore nscripts are highly interoperable with other javascript based development tools.
 
 ## Getting started with `nscript`
 
@@ -404,6 +431,20 @@ The following arguments can be passed to the `nscript` script.
 
 #### Running with `nscript`
 
+```javacript
+module.exports = function(shell) {
+	shell("echo", "hello", "world");
+}
+```
+
+Assuming the above script was saved as script.js:
+```
+$ nscript script.js
+hello world
+```
+
+#### Running standalone with `nscript`
+
 Script file:
 
 ```javacript
@@ -419,7 +460,14 @@ $ ./script.js
 hello world
 ```
 
-#### Running with `node` (a.k.a. `local` script)
+A similar, executable standalone script can be templated by using `nscript --touch script.js`:
+```
+$ nscript --touch script.js
+$ ./script.js
+hello world
+```
+
+#### Running standalone with `node` (a.k.a. `local` script)
 
 This option does not require `nscript` to be installed globally.
 
@@ -433,6 +481,14 @@ require('nscript')(function(shell) {
 ```
 $ chmod +x script.js
 $ npm install nscript --save
+$ ./script.js
+hello world
+```
+
+A similar, executable standalone script can be templated by using `nscript --local --touch script.js`:
+```
+$ npm install nscript --save
+$ node node_modules/nscript  --local --touch script.js
 $ ./script.js
 hello world
 ```
