@@ -37,8 +37,11 @@ var startDir = process.cwd();
 shell.pid = process.pid;
 shell.env = process.env;
 shell.colors = colors;
-shell.nscript = require('./index.js'); //Function
 shell.glob = require('glob').sync;
+
+//TODO: make shell.nscript synchronous and return the exit code
+//TODO: or: make shell.script do autoFiber and have callback with exit code
+shell.nscript = require('./index.js'); //Function
 
 (function() {
 	var tmpCommand = command();

@@ -42,8 +42,9 @@ var scriptArgs = process.argv.slice(2); //remove node, scriptfile
 var injectArguments = runNscriptFunction.injectArguments = function(argNames, varArgs) {
 	var argValues = new Array(argNames.length);
 	var secondPass = false;
-	var validOptions = [];
+	var validOptions = [path.basename(process.argv[2])];
 	var argsRequired = -1;
+	var parseParams = !!argNames.filter(function(x){return x.indexOf("$") === 0 }).length;
 
 	//TODO: support predefined --verbose --change-dir --help --version
 	function onArg(argName, index) {
@@ -102,14 +103,19 @@ var injectArguments = runNscriptFunction.injectArguments = function(argNames, va
 
 	//parse all params and flags
 	argNames.forEach(onArg);
-	//remaining values should not be flags
-	varArgs.forEach(function(arg) {
-		//script variadic argument values should not start with a hyphen. Rly? yeah, try to touch or git add a file named '-p' for exampe :-P
-		if (arg.indexOf("-") === 0)
-			throw "Invalid option '" + arg + "'. Valid options are: " + validOptions.join(", ");
-	});
-	if (varArgs.length <= argsRequired)
-		throw "Missing arguments. Expected at least " + (argsRequired + 1) + " argument(s), found: '" + varArgs.join(' ') + "'";
+	for(var i = 0; i <= argsRequired; i++)
+		validOptions.push("[arg]");
+	if (parseParams)  {
+		//remaining values should not be flags
+		varArgs.forEach(function(arg) {
+			//script variadic argument values should not start with a hyphen. Rly? yeah, try to touch or git add a file named '-p' for exampe :-P
+			if (arg.indexOf("-") === 0)
+				throw "Invalid option '" + arg + "'. \nUsage: " + validOptions.join(" ");
+		});
+		//TODO: don't chekc args required? -> $$0 makes are mandatory, in contrast to $0
+		//if (varArgs.length <= argsRequired)
+		//	throw "Missing arguments. Expected at least " + (argsRequired + 1) + " argument(s), found: '" + varArgs.join(' ') + "'";
+	}
 	//variadic arguments can only be determined reliable after parsing the named args
 	secondPass = true;
 	argNames.forEach(onArg);
@@ -160,8 +166,8 @@ function makeExecutable(scriptFile, local) {
 		console.log("Marking script as executable: '" + scriptFile + "' " + (local?"[using local nscript]":""))
 		shell.nscript(function(shell, cp, chmod, rm, echo, cat) {
 			cp(scriptFile, scriptFile + ".bak");
-			echo.writeTo(local ? "#!/usr/bin/env node" : "#!/usr/bin/nscript", scriptFile);
-			cat.appendTo(scriptFile + ".bak", scriptFile);
+			echo.writeTo(scriptFile)(local ? "#!/usr/bin/env node" : "#!/usr/bin/nscript");
+			cat.appendTo(scriptFile)(scriptFile + ".bak");
 			chmod("+x", scriptFile);
 			rm(scriptFile + ".bak");
 		});
@@ -193,7 +199,16 @@ if (!module.parent) {
 		makeExecutable(program.X, program.local);
 	else if (process.argv.length > 2) {
 		var script = program.args[0];
-		runScriptFile(script);
+		try {
+			runScriptFile(script);
+		}
+		catch (e) {
+			if (shell.verbose())
+				throw e; //propage exception to the console for stack
+			else
+				console.error("" + e);
+			process.exit(8); //same as node exceptions
+		}
 	}
 	else {
 		shell.useGlobals();

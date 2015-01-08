@@ -11,7 +11,7 @@ var helloWorld = module.exports = function(shell) {
 }
 
 helloWorld.run = function() {
-	require('nscript')(helloWorld);
+	require('../../')(helloWorld);
 }
 
 if (require.main === module)

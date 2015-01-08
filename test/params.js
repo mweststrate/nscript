@@ -2,6 +2,31 @@ var utils = require('../src/utils.js');
 var nscript = require('../src/index.js');
 var shell = require('../src/shell.js');
 var tail = utils.tail;
+var spawn = require('../src/spawn.js');
+
+/**
+ * This file tests several utility functions to glob, parse args, expand arguments etc.
+ */
+
+exports.testExpandArguments = function(test) {
+	var = spawn.expandArguments;
+	test.deepEquals(e(["hoi"]), ["hoi"]);
+	test.deepEquals(e(["*.json"]), ["package.json"]);
+	test.deepEquals(e([["*.json"]]), ["*.json"]);
+	//TODO: replace michel with user
+	test.deepEquals(e([["~/.pro*"]]), ["/home/michel/.profile"]);
+	test.deepEquals(e({
+		a: true,
+		b: false
+		c: "hallo",
+		d: "*.json",
+		E: true,
+		abc: "hi",
+		abCd: 3
+		abCde: true
+	}), ["-a","-c", "hallo", "package.json", "-E", "--abc","hi","--ab-cd","3", "--ab-cde"]);
+	test.done();
+};
 
 exports.testHyphenate = function(test) {
 	var h = utils.hyphenate;

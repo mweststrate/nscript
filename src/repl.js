@@ -1,6 +1,7 @@
 var repl = require('repl');
 var colors = require('colors/safe');
 var stream = require('stream');
+var readline = require('readline');
 var Fiber = require('fibers');
 var Future = require('fibers/future');
 var shell = require('./shell.js');

@@ -18,8 +18,9 @@ var glob = require('glob');
  */
 var nextInputStream = null;
 var lastCommand = "";
+var globOptions = {nocomment:true}; //see: https://github.com/isaacs/node-glob/issues/152
 
-var expandArgument = exports.expandArgument = function(arg) {
+var expandArgument = exports.expandArgument = function(arg, i) {
 	//TODO: process args: bound cmd function, glob, home, quote, literal, map
 	if (arg === null || arg === undefined || typeof arg === "function")
 		throw new Error("Spawn argument should not be null or undefined or an function");
@@ -39,8 +40,8 @@ var expandArgument = exports.expandArgument = function(arg) {
 	}
 	arg = "" + arg; //cast to string
 	arg = arg.trim().replace(/^~/, homedir);
-	if (glob.hasMagic(arg))
-		return glob.sync(arg);
+	if (glob.hasMagic(arg, globOptions))
+		return glob.sync(arg, globOptions);
 	else
 		return arg;
 };
@@ -101,6 +102,7 @@ exports.spawn = function(commandAndArgs, opts) {
 		console.error(shell.colors.red("Failed to spawn '" + command + "': " + err));
 	});
 	child.on('close', function(code) {
+		//TODO: fs.closeSync(stdout) ?
 		if (code < 0)
 			console.log(shell.colors.bold(shell.colors.red("Failed to start the child process: " + code)));
 		else if (shell.verbose())

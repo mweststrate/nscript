@@ -29,6 +29,11 @@ module.exports = function command() {
 		return runner;
 	};
 
+	runner.relax = function() {
+		nextOptions.throwOnError = false;
+		return runner;
+	};
+
 	//TODO: force / noFail / or whatever it is called
 
 	runner.get = function() {
@@ -46,21 +51,24 @@ module.exports = function command() {
 	function outputToFile(flags) {
 		var args = toArray(arguments);
 		var mode = args.shift();
-		var target = args.pop();
-		var filename = path.join(shell.cwd(), target); //TODO: expand target!
+		var filename = args.pop();
+		//TODO: expand target!
 		if (shell.verbose())
 			console.log((flags == 'w' ? '>' : '>>') + ' filename');
 		var fd = fs.openSync(filename, flags);
-		try {
-			//TODO: writeTo / appendTo should not invoke the actual command, but chain. Check that stdout isn't defined yet!
-			return spawnHelper(args, { stdout : fd });
-		} finally {
-			fs.closeSync(fd);
-		}
+		//TODO: Check that stdout isn't defined yet!
+		nextOptions.stdout = fd;
+		return runner;
 	}
 
 	runner.writeTo = outputToFile.bind(null, 'w');
 	runner.appendTo = outputToFile.bind(null, 'a');
+
+	/**
+	 * Possible alternative syntax:
+	 * cat.stream("**.js").writeTo / appendTo / pipe("other command")
+	 * grep.read(cat.stream("**.js")).stream("bla.txt").writeTo("bla")
+	 */
 
 	//TODO: runner.getOutputStream()
 	runner.pipe = function() {
@@ -91,9 +99,9 @@ module.exports = function command() {
 		return runner;
 	};
 
-	runner.readFrom = function(source) {
+	runner.readFrom = function(filename) {
 		//TODO: check stdin not setyet
-		var filename = path.join(shell.cwd(), source); //TODO: expand source!
+		//TODO: expand filename!
 		if (shell.verbose())
 			console.log('< ' + filename);
 		nextOptions.stdin = fs.openSync(filename, 'r');

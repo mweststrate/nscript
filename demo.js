@@ -78,6 +78,8 @@ exports = function(shell, exec, cp, cf) {
 // 1. .npm ignore
 // 1. generated docs
 // 1. windows support
+// 1. catch EACCESS errors: file not found ornot executable
+// 1. create instantiate and link nscript based shell scripts
 //
 // # Later versions prip
 // 3. fileUtils isFile, isDir, isExecutable, newer(), older(), outdated()
