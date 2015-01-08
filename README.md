@@ -4,33 +4,28 @@
 
 <span style="color:red">(experimental, still under heavy development)</span>
 
-*Writing shell scripts is hard. But if a program just takes some input and generates some output, a **program** could be considered  a **function**. Invoking functions and reasoning about parameters and return values is a very natural thing to do in any GPL, such as **javascript**. So lets start writing shell scripts in javascript. Without any further introduction, I hereby present you `nscript`:*
+_Writing shell scripts is hard. But if a program just takes some input and generates some output, a **program** could be considered  a **function**. Invoking functions and reasoning about parameters and return values is a very natural thing to do in any GPL, such as **javascript**. So lets start writing shell scripts in javascript. Without any further introduction, I hereby present you `nscript`:_
 
 ```javascript
-/* Publish.js */
-module.exports = function(shell, npm) {
-	var package = require('package.json');
-	if (shell.prompt("Are you sure you want to publish " + package.name + " version " + package.version + " to the NPM package repository? [y/n]") === "y") {
-		if (npm.test("info", package.name)) {
-			//package is registered in npm
-			var publishedPackageInfo = JSON.parse(npm.get("info", package.name));
-			if (publishedPackageInfo.versions == package.version || publishedPackageInfo.versions.indexOf(package.version) != -1) {
-				console.error("Version " + package.version + " is already published to npm")
-				shell.exit(1);
-			}
-		}
-		npm("publish");
-		console.log("Published!")
-	}
-	else
-		console.log("Cancelled")
+#!/usr/bin/nscript
+// A nscript script is just a function exposed by a CommonJS module
+// This script has multiple arguments, the search query, and optional --dir and --filetype flags
+module.exports = function(shell, grep, $$filetype, $$dir, $0) {
+	// change search directory of the script if --dir is provided
+	if ($$dir)
+		shell.cd($$dir);
+	// run grep. Grep fails if it doesn't find anything, so test the return value
+	if (!grep.test(
+		// grep options: F: take search literal, i: case insensitive, n: show line numbers
+		{ F: true, i: true, n: true },
+		// pass in the search query literally using brackets. Prompt for a search query if not set
+		[$0 || shell.prompt('Please enter your search text:')],
+		// apply the filter. nscript expands asterixes automatically
+		$$filetype ? '**/*.'+ $$filetype : '**/*',
+		'/dev/null'
+	))
+		console.log("No matches found for '" + $0 +"'");
 }
-```
-
-```bash
-$ nscript publish.js
-Are you sure you want to publish nscript version 0.0.2 to the NPM package repository? [y/n]: y
-Published!
 ```
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -95,7 +90,7 @@ Published!
 
 ### Installing `nscript`
 
-Install `nscript` using: `npm install -g nscript`. You might need sudo access for this.
+Install `nscript` using: `npm install -g nscript`. You might need to `sudo` this command..
 
 <span style="font-size: 0.5em">
 Since the project uses [node-gyp](https://github.com/TooTallNate/node-gyp) and [fibers](https://github.com/laverdet/node-fibers) you might need to have some [other stuff](https://github.com/TooTallNate/node-gyp#installation) installed, like XCode on mac or 'build-essential' on linux.
