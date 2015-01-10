@@ -7,7 +7,14 @@ var buffer = require('buffer');
 //wrap in fiber
 function withShell(f) {
 	new Fiber(function() {
-		f(require('../src/shell.js'));
+		try {
+			f(require('../src/shell.js'));
+		}
+		catch(e) {
+			console.error(e);
+			console.log(e.stack);
+			throw e;
+		}
 	}).run();
 }
 
@@ -30,7 +37,9 @@ function withShell(f) {
  */
 
 exports.testCommand = function(test) {
+	debugger;
 	withShell(function(shell) {
+		debugger;
 		test.equals(shell.alias().run('test/scripts/hello1.js'), 0);
 
 		test.equals(shell.alias().code('true'), 0);
@@ -41,8 +50,8 @@ exports.testCommand = function(test) {
 
 		test.equals(shell.alias().get('test/scripts/hello1.js'), "hello world\n");
 
-		test.equals(shell.alias().read("hi").get("cat"),"hi");
-		test.equals(shell.alias().read(new buffer.Buffer("hi")).get("cat"),"hi");
+		test.equals(shell.alias().read("hi").get("cat"),"hi\n");
+		test.equals(shell.alias().read(new buffer.Buffer("hi")).get("cat"),"hi\n");
 
 		test.equals(shell.alias().writeTo("/tmp/nscript_" + shell.pid)("echo","hi"), 0)
 		test.equals(shell.alias().appendTo("/tmp/nscript_" + shell.pid)("echo","hi"), 0)
@@ -62,16 +71,18 @@ exports.testCommand = function(test) {
 		var pid = shell.detach("sleep",3);
 		test.ok(+(new Date) - now < 2000);
 
-		//both grep and sleep will appear in ps aux
-		test.equals(shell("ps", "h").get(pid).split("\n"), 2);
-		test.equals(shell("ps","aux").pipe("grep","sleep").get().split("\n").length, 2)
+		test.equals(shell.get("ps", "h", pid).trim().split("\n").length, 1);
+		//both grep and sleep might appear in ps aux
+		test.ok(shell.pipe("ps","auxh").get("grep",pid).trim().split("\n").length >= 1)
 
 		setTimeout(function() {
+			//pid is now killed, 
 			//only grep will appear in ps aux
-			test.equals(shell("ps","h").get(pid).split("\n"), 0);
-			test.equals(shell("ps","aux").pipe("grep").get("split").split("\n").length, 1)
-
-			test.done();
+			withShell(function(shell) {
+				test.equals(shell.test("ps","h",pid),false);
+				test.ok(shell.pipe("ps","auxh").get("grep","sleep").trim().split("\n").length <= 1)
+				test.done();
+			});
 		}, 5000)
 
 	});
@@ -92,22 +103,22 @@ exports.testCommand = function(test) {
       - [shell.verbose(boolean)](#shellverboseboolean)
       - [shell.useGlobals()](#shelluseglobals)
  */
-exports.tesShell = function(test) {
+exports.testShell = function(test) {
 	withShell(function(shell) {
-		test.equals(shell.code("nscript", tempScript(shell, "exit 13")),13);
+		test.equals(shell.code("nscript", tempScript(shell, "shell.exit(13)")),13);
 
 		test.ok(shell.pid);
 		test.ok(shell.env.USER);
 		test.equals(shell.env.USER,shell.get("whoami"))
 
-		test.deepEquals(shell.glob("**/command.js"),["src/command.js", "test/command.js"]);
+		test.deepEqual(shell.glob("**/command.js"),["src/command.js", "test/command.js"]);
 
 		shell.code("false");
-		test.deepEquals(shell.lastExitCode, 1);
+		test.deepEqual(shell.lastExitCode, 1);
 		shell.code("true");
-		test.deepEquals(shell.lastExitCode, 0);
+		test.deepEqual(shell.lastExitCode, 0);
 
-		test.deepEquals(shell("echo","hi").pipe(tempScript(shell,"shell(echo('got', shell.prompt('type hi')));")),"got hi\n");
+		test.deepEqual(shell.pipe("echo","hi")(tempScript(shell,"shell(echo('got', shell.prompt('type hi')));")),"got hi\n");
 
 		test.equals(typeof 'code', 'undefined');
 		shell.useGlobals();
@@ -151,6 +162,7 @@ exports.testCd = function(test) {
 
 function tempScript(shell, script) {
 	var s = "/tmp/nscript_tmp_" + shell.pid
-	shell("echo",["module.exports=function(shell){"+script+"}"]).writeTo(s)();
+	shell.writeTo(s)("echo",["module.exports=function(shell){"+script+"}"]);
+	shell("chmod","+x", s);
 	return s;
 }

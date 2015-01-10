@@ -7,7 +7,7 @@ var stream = require('stream');
 var toArray = require('./utils.js').toArray;
 var extend = require('./utils.js').extend;
 
-module.exports = function command() {
+var command = module.exports = function() {
 	var baseArgs = toArray(arguments);
 	var nextOptions = {};
 
@@ -77,7 +77,7 @@ module.exports = function command() {
 			throwOnError: false,
 			stdout: 'pipe'
 		});
-		return command().input(child.stdout);
+		return command().read(child.stdout);
 		//TODO: add guard on next tick that the pipe is fed into a command that was actually called
 		//TODO: add guard that input / inputFile isn't called!
 	};
