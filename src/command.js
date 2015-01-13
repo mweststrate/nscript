@@ -54,7 +54,7 @@ var command = module.exports = function() {
 		var filename = args.pop();
 		//TODO: expand target!
 		if (shell.verbose())
-			console.log((flags == 'w' ? '>' : '>>') + ' filename');
+			console.log((flags == 'w' ? '>' : '>>') + ' ' + filename);
 		var fd = fs.openSync(filename, flags);
 		//TODO: Check that stdout isn't defined yet!
 		nextOptions.stdout = fd;

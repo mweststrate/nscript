@@ -66,6 +66,8 @@ exports.testCommand = function(test) {
 		test.deepEqual(shell.alias("echo","*.js").boundArgs,["echo","*.js"]);
 		test.equals(shell.alias("echo","-n").get("3"),"3");
 
+		//TODO: add test for relax() + -1 (not spawning), should fail
+
 		//test detach and pipe
 		var now = +(new Date);
 		var pid = shell.detach("sleep",3);
@@ -76,7 +78,7 @@ exports.testCommand = function(test) {
 		test.ok(shell.pipe("ps","auxh").get("grep",pid).trim().split("\n").length >= 1)
 
 		setTimeout(function() {
-			//pid is now killed, 
+			//pid is now killed,
 			//only grep will appear in ps aux
 			withShell(function(shell) {
 				test.equals(shell.test("ps","h",pid),false);

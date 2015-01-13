@@ -1,6 +1,7 @@
 /*
  * Imports
  */
+var fs = require('fs');
 var shell = require('./shell.js');
 var repl = require('./repl.js');
 var child_process = require('child_process');
@@ -54,6 +55,15 @@ var expandArguments = exports.expandArguments = function(args) {
  * Methods
  */
 exports.spawn = function(commandAndArgs, opts) {
+	//TODO: do not require local scripts to be prefixed with './'
+	var stdio;
+	function closeStdios() {
+		stdio.forEach(function(stream) {
+			if (typeof stream === "number" && stream > 2)
+				fs.closeSync(stream); //Close all file descriptors that are files
+		});
+	}
+
 	opts = extend({
 		blocking : true,
 		detached : false,
@@ -80,12 +90,12 @@ exports.spawn = function(commandAndArgs, opts) {
 	var cmd = commandAndArgs.shift();
 
 	if (shell.verbose())
-		console.log(shell.colors.cyan("Starting: " + command));
+		console.error(shell.colors.cyan("Starting: " + command));
 
 	var child = child_process.spawn(cmd, commandAndArgs, {
 		cwd: shell.cwd(),
 		detached: opts.detached,
-		stdio : [
+		stdio : stdio = [
 			opts.stdin ? (typeof opts.stdin == "number" ? opts.stdin : 'pipe') : 0,
 			opts.onOut ? 'pipe' : (opts.stdout ? opts.stdout : (opts.silent ? 'ignore' : 1)),
 			opts.onError ? 'pipe' : (opts.stderr ? opts.stderr : (opts.silent ? 'ignore' : 2))
@@ -99,10 +109,11 @@ exports.spawn = function(commandAndArgs, opts) {
 	if (opts.onError)
 		child.stderr.on('data', opts.onError);
 	child.on('error', function(err) {
+		closeStdios();
 		console.error(shell.colors.red("Failed to spawn '" + command + "': " + err));
 	});
 	child.on('close', function(code) {
-		//TODO: fs.closeSync(stdout) ?
+		closeStdios();
 		if (code < 0)
 			console.log(shell.colors.bold(shell.colors.red("Failed to start the child process: " + code)));
 		else if (shell.verbose())
