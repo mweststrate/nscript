@@ -4,6 +4,7 @@
  * IMPORTS
  */
 var path = require('path');
+var fs = require('fs');
 var Future = require('fibers/future');
 var colors = require('colors/safe');
 var utils = require('./utils.js');
@@ -26,6 +27,8 @@ var shell = module.exports = function shell() {
  */
 var command = require('./command.js');
 var repl = require('./repl.js');
+var spawn = require('./spawn.js');
+
 var startDir = process.cwd();
 
 /*
@@ -38,6 +41,7 @@ shell.pid = process.pid;
 shell.env = process.env;
 shell.colors = colors;
 shell.glob = require('glob').sync;
+shell.lastExitCode = 0;
 
 //TODO: make shell.nscript synchronous and return the exit code
 //TODO: or: make shell.script do autoFiber and have callback with exit code
@@ -56,7 +60,6 @@ shell.nscript = require('./index.js'); //Function
 }())
 
 
-//TODO: lastExitCode
 
 /**
  * Creates shorthand functions for invoking a command using @see shell.run. For example:
@@ -109,8 +112,11 @@ shell.useGlobals = function() {
 	}
 };
 
-shell.cwd = function() {
-	return process.cwd();
+shell.cwd = shell.pwd = function() {
+	var dir = process.cwd();
+	if (dir[dir.length -1] !== path.sep)
+		return dir + path.sep;
+	return dir;
 };
 
 shell.cd = function(newdir) {
@@ -123,4 +129,37 @@ shell.cd = function(newdir) {
 	repl.updatePrompt();
 	if (shell.verbose())
 		console.log(colors.cyan("> Entering " + shell.cwd()));
+};
+
+shell.isFile = function(path) {
+	try {
+		return fs.statSync(spawn.expandArgument(path)).isFile();
+	}
+	catch (e) {
+		return false;
+	}
+};
+
+shell.isDir = function(path) {
+	try {
+		return fs.statSync(spawn.expandArgument(path)).isDirectory();
+	}
+	catch (e) {
+		return false;
+	}
+};
+
+shell.writeString = function(filename, text) {
+	fs.writeFileSync(spawn.expandArgument(filename), "" + text, { encoding: 'utf8' });
+};
+
+shell.readString = function(filename) {
+	return fs.readFileSync(spawn.expandArgument(filename), { encoding: 'utf8' });
+};
+
+shell.files = function(dir) {
+	dir = dir ? spawn.expandArgument(dir) : ".";
+	return fs.readdirSync(dir).map(function(entry) {
+		return (dir == "." ? "" : dir + path.sep) + entry;
+	});
 };

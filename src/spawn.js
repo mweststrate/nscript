@@ -2,6 +2,7 @@
  * Imports
  */
 var fs = require('fs');
+var path = require('path');
 var shell = require('./shell.js');
 var repl = require('./repl.js');
 var child_process = require('child_process');
@@ -21,7 +22,7 @@ var nextInputStream = null;
 var lastCommand = "";
 var globOptions = {nocomment:true}; //see: https://github.com/isaacs/node-glob/issues/152
 
-var expandArgument = exports.expandArgument = function(arg, i) {
+var expandArgument = exports.expandArgument = function(arg, applyGlobbing) {
 	//TODO: process args: bound cmd function, glob, home, quote, literal, map
 	if (arg === null || arg === undefined || typeof arg === "function")
 		throw new Error("Spawn argument should not be null or undefined or an function");
@@ -34,22 +35,32 @@ var expandArgument = exports.expandArgument = function(arg, i) {
 			if (arg[key] !== false) {
 				res.push(utils.hyphenate(key));
 				if (arg[key] !== true)
-					res.push(arg[key]); //TODO: expand value!
+					res.push(expandArgument(arg[key], applyGlobbing));
 			}
 		}
 		return res;
 	}
 	arg = "" + arg; //cast to string
 	arg = arg.trim().replace(/^~/, homedir);
-	if (glob.hasMagic(arg, globOptions))
+	if (applyGlobbing && glob.hasMagic(arg, globOptions))
 		return glob.sync(arg, globOptions);
 	else
 		return arg;
 };
 
 var expandArguments = exports.expandArguments = function(args) {
-	return utils.flatten(args.map(expandArgument));
+	return utils.flatten(args.map(function(arg) {
+		return expandArgument(arg, true);
+	}));
 };
+
+fixLocalScript = function(scriptName) {
+	if (scriptName.indexOf(path.sep) !== -1) // there is a folder name, or the script name is already relative, absolute or related to home
+		return scriptName;
+	if (shell.isFile(scriptName))
+		return "./" + scriptName;
+	return scriptName;
+}
 
 /*
  * Methods
@@ -82,7 +93,11 @@ exports.spawn = function(commandAndArgs, opts) {
 	if (opts.onError && opts.stderr)
 		throw "onError and stderr cannot be combined!";
 
+	//expand the arguments before spawning, the first argument is treated differently
+	var executable = fixLocalScript(expandArgument(commandAndArgs.shift(), false));
 	commandAndArgs = expandArguments(commandAndArgs);
+	commandAndArgs.unshift(executable);
+
 	var command = lastCommand = commandAndArgs.join(" ");
 	if (!opts.detached)
 		repl.pause();
@@ -121,13 +136,13 @@ exports.spawn = function(commandAndArgs, opts) {
 		if (!opts.detached)
 			repl.resume();
 		if (opts.blocking) {
-			//TODO: update lastExitCode
 			future.return(code);
 		}
 	});
 
 	if (opts.blocking) {
 		var status = future.wait();
+		shell.lastExitCode = status;
 		if (opts.throwOnError && status !== 0)
 			throw "Command '" + command + "' failed with status: " + status;
 		return status;

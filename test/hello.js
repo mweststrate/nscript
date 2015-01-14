@@ -17,6 +17,13 @@ function withShell(f) {
 exports.hello1 = function(test) {
 	withShell(function(shell) {
 		test.equals(shell.get('test/scripts/hello1.js').trim(), 'hello world');
+
+		// relative scripts should work as well; unike normal bash
+		cd('test/scripts');
+		test.equals(shell.get('./hello1.js').trim(), 'hello world');
+		test.equals(shell.get('hello1.js').trim(), 'hello world');
+		cd();
+
 		test.equals(shell.get('test/scripts/hello2.js').trim(), 'hello world');
 		test.equals(shell.get('test/scripts/hello3.js').trim(), 'hello world');
 

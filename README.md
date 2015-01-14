@@ -17,10 +17,10 @@ module.exports = function(shell, grep, $$filetype, $$dir, $0) {
 	// run grep. Grep fails if it doesn't find anything, so test the return value
 	if (!grep.test(
 		// grep options: F: take search literal, i: case insensitive, n: show line numbers
-		{ F: true, i: true, n: true },
+		"-F", "-i", "-n",
 		// pass in the search query literally using brackets. Prompt for a search query if not set
 		[$0 || shell.prompt('Please enter your search text:')],
-		// apply the filter. nscript expands asterixes automatically
+		// apply the filter. nscript expands asterixes and other glob patterns automatically
 		$$filetype ? '**/*.'+ $$filetype : '**/*',
 		'/dev/null'
 	))
@@ -32,53 +32,58 @@ module.exports = function(shell, grep, $$filetype, $$dir, $0) {
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
-- [nscript](#nscript)
-  - [Introduction](#introduction)
-  - [Getting started with `nscript`](#getting-started-with-nscript)
-    - [Installing `nscript`](#installing-nscript)
-    - [Creating and running your first script](#creating-and-running-your-first-script)
-  - [Anatonomy of a `nscript`](#anatonomy-of-a-nscript)
-    - [Main `nscript` concepts](#main-nscript-concepts)
-  - [API Documentation](#api-documentation)
-    - [Command](#command)
-      - [command.run(args)](#commandrunargs)
-      - [command.code(args)](#commandcodeargs)
-      - [command.test(args)](#commandtestargs)
-      - [command.get(args)](#commandgetargs)
-      - [command.read(data)](#commandreaddata)
-      - [command.pipe(args)](#commandpipeargs)
-      - [command.readFrom(filename)](#commandreadfromfilename)
-      - [command.writeTo(args, filename)](#commandwritetoargs-filename)
-      - [command.appendTo(args, filename)](#commandappendtoargs-filename)
-      - [command.silent()](#commandsilent)
-      - [command.relax()](#commandrelax)
-      - [command.boundArgs](#commandboundargs)
-      - [command.detach(args)](#commanddetachargs)
-    - [shell](#shell)
-      - [shell.alias(boundArgs)](#shellaliasboundargs)
-      - [shell.exit(exitCode)](#shellexitexitcode)
-      - [shell.cwd()](#shellcwd)
-      - [shell.cd(dir)](#shellcddir)
-      - [shell.prompt(prompt)](#shellpromptprompt)
-      - [shell.lastExitCode](#shelllastexitcode)
-      - [shell.pid](#shellpid)
-      - [shell.env](#shellenv)
-      - [shell.colors](#shellcolors)
-      - [shell.nscript(nscriptFunction)](#shellnscriptnscriptfunction)
-      - [shell.glob(pattern, opts)](#shellglobpattern-opts)
-      - [shell.verbose(boolean)](#shellverboseboolean)
-      - [shell.useGlobals()](#shelluseglobals)
-    - [nscript function arguments](#nscript-function-arguments)
-    - [command argument expansion](#command-argument-expansion)
-  - [nscript CLI arguments](#nscript-cli-arguments)
-  - [Future plans](#future-plans)
-  - [Different ways of running `nscript` functions](#different-ways-of-running-nscript-functions)
-    - [As standalone script](#as-standalone-script)
-      - [Running with `nscript`](#running-with-nscript)
-      - [Running with `node` (a.k.a. `local` script)](#running-with-node-aka-local-script)
-      - [Running from other scripts](#running-from-other-scripts)
-  - [Comparison to other tools.](#comparison-to-other-tools)
-    - [Grunt](#grunt)
+- [Introduction](#introduction)
+- [Getting started with `nscript`](#getting-started-with-nscript)
+  - [Installing `nscript`](#installing-nscript)
+  - [Creating and running your first script](#creating-and-running-your-first-script)
+- [Anatonomy of a `nscript`](#anatonomy-of-a-nscript)
+  - [Main `nscript` concepts](#main-nscript-concepts)
+- [API Documentation](#api-documentation)
+  - [Command](#command)
+    - [command.run(args)](#commandrunargs)
+    - [command.code(args)](#commandcodeargs)
+    - [command.test(args)](#commandtestargs)
+    - [command.get(args)](#commandgetargs)
+    - [command.read(data)](#commandreaddata)
+    - [command.pipe(args)](#commandpipeargs)
+    - [command.readFrom(filename)](#commandreadfromfilename)
+    - [command.writeTo(args, filename)](#commandwritetoargs-filename)
+    - [command.appendTo(args, filename)](#commandappendtoargs-filename)
+    - [command.silent()](#commandsilent)
+    - [command.relax()](#commandrelax)
+    - [command.boundArgs](#commandboundargs)
+    - [command.detach(args)](#commanddetachargs)
+  - [shell](#shell)
+    - [shell.alias(boundArgs)](#shellaliasboundargs)
+    - [shell.exit(exitCode)](#shellexitexitcode)
+    - [shell.cwd()](#shellcwd)
+    - [shell.cd(dir)](#shellcddir)
+    - [shell.prompt(prompt)](#shellpromptprompt)
+    - [shell.lastExitCode](#shelllastexitcode)
+    - [shell.pid](#shellpid)
+    - [shell.env](#shellenv)
+    - [shell.colors](#shellcolors)
+    - [shell.nscript(nscriptFunction)](#shellnscriptnscriptfunction)
+    - [shell.glob(pattern, opts)](#shellglobpattern-opts)
+    - [shell.verbose(boolean)](#shellverboseboolean)
+    - [shell.useGlobals()](#shelluseglobals)
+    - [shell.files(dir)](#shellfilesdir)
+    - [shell.isFile(path)](#shellisfilepath)
+    - [shell.isDir(path)](#shellisdirpath)
+    - [shell.readString(path)](#shellreadstringpath)
+    - [shell.writeString(path, text)](#shellwritestringpath-text)
+  - [nscript function arguments](#nscript-function-arguments)
+  - [command argument expansion](#command-argument-expansion)
+- [nscript CLI arguments](#nscript-cli-arguments)
+- [Different ways of running `nscript` functions](#different-ways-of-running-nscript-functions)
+  - [As standalone script](#as-standalone-script)
+    - [Running with `nscript`](#running-with-nscript)
+    - [Running standalone with `nscript`](#running-standalone-with-nscript)
+    - [Running standalone with `node` (a.k.a. `local` script)](#running-standalone-with-node-aka-local-script)
+    - [Running from other scripts](#running-from-other-scripts)
+- [Future plans](#future-plans)
+- [Comparison to other tools.](#comparison-to-other-tools)
+  - [Grunt](#grunt)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -164,6 +169,12 @@ A command is both a function and an object with functions. Basically, `command()
 
 Several API calls return empty commands, which are not bound to any executable yet, such as `shell.inputFrom` and `command.pipe`.
 Bound arguments are always expanded upon command invocation, not upon creation.
+
+Method of command are always bound to the instance, so you can safely alias methods and invoke them directly:
+```javascript
+var gitLog = shell.alias("git","log").get;
+gitLog(); //returns the current git log
+```
 
 #### command.run(args)
 
@@ -371,6 +382,18 @@ If set to true, `nscript` will print lots of debug input. Call `shell.verbose()`
 #### shell.useGlobals()
 
 If invoked, all methods and properties of `shell` will be added to the global scope. After the invocation, you can use `run(args)` instead of `shell.run(args)` for example.
+
+#### shell.files(dir)
+
+Returns all entries in the given `dir` as string array, relative to the current working directory.
+
+#### shell.isFile(path)
+
+#### shell.isDir(path)
+
+#### shell.readString(path)
+
+#### shell.writeString(path, text)
 
 ### nscript function arguments
 

@@ -82,89 +82,16 @@ exports.testCommand = function(test) {
 			//only grep will appear in ps aux
 			withShell(function(shell) {
 				test.equals(shell.test("ps","h",pid),false);
-				test.ok(shell.pipe("ps","auxh").get("grep","sleep").trim().split("\n").length <= 1)
 				test.done();
 			});
 		}, 5000)
 
 	});
 }
-/*
-    - [shell](#shell)
-      - [shell.alias(boundArgs)](#shellaliasboundargs)
-      - [shell.exit(exitCode)](#shellexitexitcode)
-      - [shell.cwd()](#shellcwd)
-      - [shell.cd(dir)](#shellcddir)
-      - [shell.prompt(prompt)](#shellpromptprompt)
-      - [shell.lastExitCode](#shelllastexitcode)
-      - [shell.pid](#shellpid)
-      - [shell.env](#shellenv)
-      - [shell.colors](#shellcolors)
-      - [shell.nscript(nscriptFunction)](#shellnscriptnscriptfunction)
-      - [shell.glob(pattern, opts)](#shellglobpattern-opts)
-      - [shell.verbose(boolean)](#shellverboseboolean)
-      - [shell.useGlobals()](#shelluseglobals)
- */
-exports.testShell = function(test) {
-	withShell(function(shell) {
-		test.equals(shell.code("nscript", tempScript(shell, "shell.exit(13)")),13);
-
-		test.ok(shell.pid);
-		test.ok(shell.env.USER);
-		test.equals(shell.env.USER,shell.get("whoami"))
-
-		test.deepEqual(shell.glob("**/command.js"),["src/command.js", "test/command.js"]);
-
-		shell.code("false");
-		test.deepEqual(shell.lastExitCode, 1);
-		shell.code("true");
-		test.deepEqual(shell.lastExitCode, 0);
-
-		test.deepEqual(shell.pipe("echo","hi")(tempScript(shell,"shell(echo('got', shell.prompt('type hi')));")),"got hi\n");
-
-		test.equals(typeof 'code', 'undefined');
-		shell.useGlobals();
-		test.equals(typeof 'code', 'function');
-
-		shell.nscript(function(subshell, echo) {
-			test.equals(subshell.get("echo", "hi"), "hi\n");
-			test.equals(echo.get("echo"), "hi\n");
-			test.done();
-		});
-	});
-}
-
-exports.testCd = function(test) {
-	withShell(function(shell) {
-		var base = process.cwd();
-		test.equals(shell.cwd(), base);
-		shell.cd("node_modules");
-		shell.get("ls").indexOf("glob") != -1;
-		test.equals(shell.cwd(), base + "node_modules/");
-
-		shell.cd();
-		test.equals(shell.cwd(), base);
-		shell.cd("node_modules/glob");
-		shell.get("ls").indexOf("safe.js") != -1;
-
-		test.ok(shell.env.USER);
-		test.equals(shell.get("whoami"),shell.env.USER);
-		shell.cd("/home/");
-		shell.get("ls").indexOf(shell.env.USER) != -1;
-
-		shell.cd("~/Desktop");
-		test.equals(shell.cwd(), "/home/" + shell.env.USER + "/Desktop");
-
-		test.equals(shell.pwd(), shell.cwd());
-		shell.cd();
-		test.equals(shell.pwd(), base);
-	});
-}
-
 
 function tempScript(shell, script) {
 	var s = "/tmp/nscript_tmp_" + shell.pid
-	shell.writeTo(s)("echo",["module.exports=function(shell){"+script+"}"]);
+	shell.writeTo(s)("echo",["#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}"]);
 	shell("chmod","+x", s);
 	return s;
 }
