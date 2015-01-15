@@ -163,3 +163,9 @@ shell.files = function(dir) {
 		return (dir == "." ? "" : dir + path.sep) + entry;
 	});
 };
+
+/**
+ * shell.buildCompile[Async](globPattern, transformFunction(files, callback?))
+ * shell.buildTransform[Async](globPattern, transformFunction(file, callback?))
+ * shell.buildWatch();
+ */

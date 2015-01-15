@@ -105,7 +105,7 @@ exports.spawn = function(commandAndArgs, opts) {
 	var cmd = commandAndArgs.shift();
 
 	if (shell.verbose())
-		console.error(shell.colors.cyan("Starting: " + command));
+		console.log(shell.colors.cyan("Starting: " + command));
 
 	var child = child_process.spawn(cmd, commandAndArgs, {
 		cwd: shell.cwd(),

@@ -10,7 +10,13 @@ var Fiber = require('fibers');
 //wrap in fiber
 function withShell(f) {
 	new Fiber(function() {
-		f(require('../src/shell.js'));
+		try {
+			f(require('../src/shell.js'));
+		}
+		catch (e) {
+			console.error(e);
+			throw e;
+		}
 	}).run();
 }
 
@@ -19,10 +25,10 @@ exports.hello1 = function(test) {
 		test.equals(shell.get('test/scripts/hello1.js').trim(), 'hello world');
 
 		// relative scripts should work as well; unike normal bash
-		cd('test/scripts');
+		shell.cd('test/scripts');
 		test.equals(shell.get('./hello1.js').trim(), 'hello world');
 		test.equals(shell.get('hello1.js').trim(), 'hello world');
-		cd();
+		shell.cd();
 
 		test.equals(shell.get('test/scripts/hello2.js').trim(), 'hello world');
 		test.equals(shell.get('test/scripts/hello3.js').trim(), 'hello world');
@@ -62,16 +68,18 @@ exports.touch = function(test) {
 		shell("mkdir","-p", "test/tmp");
 
 		shell("nscript", "--touch", "test/tmp/1.js");
-		test.equals(shell.get('test/tmp/1.js').trim(), 'hello world');
+		test.equals(shell.get('test/tmp/1.js').trim(), 'Hello world');
 
 		shell("chmod","-x", 'test/tmp/1.js');
-		test.fail(shell.test('test/tmp/1.js'));
+		test.equals(shell.test('test/tmp/1.js'), false);
 
 		shell("nscript", "-x", "test/tmp/1.js");
-		test.equals(shell.get('test/tmp/1.js').trim(), 'hello world');
+		test.equals(shell.get('test/tmp/1.js').trim(), 'Hello world');
 
 		shell("nscript", "--touch", "test/tmp/2.js", "--local");
-		test.equals(shell.get('test/tmp/2.js').trim(), 'hello world');
+		//Fix nscript reference, which is not available locally as node_module in this project..
+		shell.writeString("test/tmp/2.js", shell.readString("test/tmp/2.js").replace("require(nscript)", "require('../../')"));
+		test.equals(shell.get('test/tmp/2.js').trim(), 'Hello world');
 
 		test.done();
 	});

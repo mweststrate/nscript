@@ -36,6 +36,7 @@ var command = module.exports = function() {
 
 	//TODO: force / noFail / or whatever it is called
 
+	//TODO: onError
 	runner.get = function() {
 		var buffer = "";
 		spawnHelper(toArray(arguments), {
