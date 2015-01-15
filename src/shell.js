@@ -88,14 +88,20 @@ shell.alias = function() {
 	return command.apply(null, arguments);
 };
 
-shell.exit = function(status) {
+shell.exit = function(status, message) {
+	if (message) {
+		if (status !== 0)
+			console.error(colors.bold(colors.red(message)));
+		else
+			console.error(message);
+	}
 	if (shell.verbose())
 		console.log(colors.bold(colors[status === 0 ? 'green':'red']("Exiting with status: " + status)));
 	process.exit(status);
 };
 
-shell.prompt = function(prompt) {
-	return repl.prompt(prompt);
+shell.prompt = function(prompt, defaultValue) {
+	return repl.prompt(prompt, defaultValue);
 };
 
 shell.verbose = function(newVerbose) {

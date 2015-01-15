@@ -34,13 +34,20 @@ var command = module.exports = function() {
 		return runner;
 	};
 
-	//TODO: force / noFail / or whatever it is called
-
-	//TODO: onError
 	runner.get = function() {
 		var buffer = "";
 		spawnHelper(toArray(arguments), {
 			onOut : function(data) {
+				buffer += data.toString();
+			}
+		});
+		return buffer;
+	};
+
+	runner.getError = function() {
+		var buffer = "";
+		spawnHelper(toArray(arguments), {
+			onError : function(data) {
 				buffer += data.toString();
 			}
 		});
@@ -71,7 +78,7 @@ var command = module.exports = function() {
 	 * grep.read(cat.stream("**.js")).stream("bla.txt").writeTo("bla")
 	 */
 
-	//TODO: runner.getOutputStream()
+	//TODO: runner.stream()
 	runner.pipe = function() {
 		var child = spawnHelper(toArray(arguments), {
 			blocking: false,

@@ -61,18 +61,6 @@ exports.testShell = function(test) {
 	});
 }
 
-exports.testPrompt = function(test) {
-	withShell(function(shell) {
-// 		TODO: enable tests
-//		test.deepEqual(shell.run(tempScript(shell,"shell('echo', 'got', shell.prompt('type \\\'hi\\\' manually please:'));")),"got hi\n");
-//		test.deepEqual(shell.read("hi").run(tempScript(shell,"shell('echo', 'got', shell.prompt('will receive \\\'hi\\\':'));")),"got hi\n");
-//		test.deepEqual(shell.pipe("echo","hi").run(tempScript(shell,"shell('echo', 'got', shell.prompt('will receive \\\'hi\\\':'));")),"got hi\n");
-
-		test.done();
-	});
-}
-
-
 exports.testCd = function(test) {
 	withShell(function(shell) {
 		test.equals(!!shell.cwd().match(/\/$/), true);

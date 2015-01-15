@@ -80,11 +80,11 @@ exports.spawn = function(commandAndArgs, opts) {
 		detached : false,
 		throwOnError : true,
 		silent : false,
-		onOut : null,
-		onError : null,
-		stdin : null,
-		stdout: null,
-		stderr : null
+		onOut : undefined,
+		onError : undefined,
+		stdin : undefined,
+		stdout: undefined,
+		stderr : undefined
 	}, opts);
 	if (opts.detached && opts.blocking)
 		throw "detached and blocking cannot be combined!";

@@ -206,6 +206,10 @@ Example:
 var fileNames = ls.get("-a", "*.js").split(/\n/g);
 ```
 
+#### command.getError(args)
+
+Similar to `command.get(args)` but fetches the error stream of the process instead of the standard output.
+
 #### command.read(data)
 
 Upon next invocation, passes `data` as standard input to the command. The data parameter can either be a string, Buffer, InputStream or file descriptor (number). Returns the command for chaining. Note that if no `read` is set for a command that reads from STDIN, the command will read user input from the shell.
@@ -307,9 +311,9 @@ module.exports = function(shell, echo) {
 }
 ```
 
-#### shell.exit(exitCode)
+#### shell.exit(exitCode [, message])
 
-Stops the current script with the specified exit code. This is exactly the same as `process.exit`.
+Stops the current script with the specified exit code. If a message is provided, this message is printed on the error output stream.
 
 #### shell.cwd()
 
@@ -319,9 +323,9 @@ Returns the current working directory of the script. Initially, this is the dire
 
 Changes the current working directory. `dir` can be relative to the current working directory, or absolute. If dir starts with `~` it is interpreted as relative to the users home directory. If no dir is passed to the `cd` function, `cd` resets to directory in which the script originally started.
 
-#### shell.prompt(prompt)
+#### shell.prompt(prompt [, default])
 
-Aks the user for input. The function returns as soon as the user confirms his input with the return key. For example:
+Aks the user for input. The function returns as soon as the user confirms his input with the return key. If a default value is provided, this value is returned if nothing is entered. For example:
 
 ```javascript
 module.exports = function(shell, rm, $0) {

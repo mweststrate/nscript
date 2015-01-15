@@ -34,7 +34,7 @@ function getPrompt() {
 	return "[" + shell.cwd() + "] $ "; //TODO: replace homedir
 }
 
-exports.prompt = function(prompt) {
+exports.prompt = function(prompt, defaultValue) {
 	var useRepl = replServer !== null;
 	var future = new Future();
 	var rl;
@@ -46,10 +46,13 @@ exports.prompt = function(prompt) {
 	else
 		rl = readline.createInterface(process.stdin, process.stdout);
 
-	rl.setPrompt("" + prompt + " ");
+	if (defaultValue)
+		rl.setPrompt("" + prompt + " [" + defaultValue + "]: ");
+	else
+		rl.setPrompt("" + prompt + " ");
 	rl.prompt();
 	rl.once('line', function(line) {
-		future.return(line.trim());
+		future.return(line.trim() || defaultValue || "");
 	});
 	var line = future.wait();
 
