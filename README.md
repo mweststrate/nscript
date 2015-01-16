@@ -2,8 +2,6 @@
 
 *Javascript powered shell scripts*
 
-<span style="color:red">(experimental, still under heavy development)</span>
-
 _Writing shell scripts is hard. But if a program just takes some input and generates some output, a **program** could be considered  a **function**. Invoking functions and reasoning about parameters and return values is a very natural thing to do in any GPL, such as **javascript**. So lets start writing shell scripts in javascript. Without any further introduction, I hereby present you `nscript`:_
 
 ```javascript
@@ -44,6 +42,7 @@ module.exports = function(shell, grep, $$filetype, $$dir, $0) {
     - [command.code(args)](#commandcodeargs)
     - [command.test(args)](#commandtestargs)
     - [command.get(args)](#commandgetargs)
+    - [command.getError(args)](#commandgeterrorargs)
     - [command.read(data)](#commandreaddata)
     - [command.pipe(args)](#commandpipeargs)
     - [command.readFrom(filename)](#commandreadfromfilename)
@@ -55,10 +54,10 @@ module.exports = function(shell, grep, $$filetype, $$dir, $0) {
     - [command.detach(args)](#commanddetachargs)
   - [shell](#shell)
     - [shell.alias(boundArgs)](#shellaliasboundargs)
-    - [shell.exit(exitCode)](#shellexitexitcode)
+    - [shell.exit(exitCode [, message])](#shellexitexitcode--message)
     - [shell.cwd()](#shellcwd)
     - [shell.cd(dir)](#shellcddir)
-    - [shell.prompt(prompt)](#shellpromptprompt)
+    - [shell.prompt(prompt [, default])](#shellpromptprompt--default)
     - [shell.lastExitCode](#shelllastexitcode)
     - [shell.pid](#shellpid)
     - [shell.env](#shellenv)

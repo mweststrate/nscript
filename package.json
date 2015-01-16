@@ -1,7 +1,7 @@
 {
   "name": "nscript",
-  "version": "0.0.1",
-  "description": "Javascript based shell scripting for the masses",
+  "version": "0.0.2",
+  "description": "Javascript powered shell scripts",
   "main": "src/index.js",
   "bin": {
     "nscript": "src/index.js"
