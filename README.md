@@ -1,28 +1,85 @@
 # nscript
 
-*Javascript powered shell scripts*
+*Write shell scripts like a bearded guru by unleashing your javascript skill*
 
-_Writing shell scripts is hard. But if a program just takes some input and generates some output, a **program** could be considered  a **function**. Invoking functions and reasoning about parameters and return values is a very natural thing to do in any GPL, such as **javascript**. So lets start writing shell scripts in javascript. Without any further introduction, I hereby present you `nscript`:_
+Writing sophisticated shell scripts is hard. But if a program just takes some input and generates some output, every **program** can be considered to be a **function**. Invoking functions and reasoning about parameters, data structures and return values is a very natural thing to do in any GPL, such as **javascript**. `nscripts` helps you to invoke shell commands in your javascript scripts. `nscript` is an excellent library to write flexible build scripts or simple command line tools. For example `unixian.js`:
 
 ```javascript
 #!/usr/bin/nscript
-// A nscript script is just a function exposed by a CommonJS module
-// This script has multiple arguments, the search query, and optional --dir and --filetype flags
-module.exports = function(shell, grep, $$filetype, $$dir, $0) {
-	// change search directory of the script if --dir is provided
-	if ($$dir)
-		shell.cd($$dir);
-	// run grep. Grep fails if it doesn't find anything, so test the return value
-	if (!grep.test(
-		// grep options: F: take search literal, i: case insensitive, n: show line numbers
-		"-F", "-i", "-n",
-		// pass in the search query literally using brackets. Prompt for a search query if not set
-		[$0 || shell.prompt('Please enter your search text:')],
-		// apply the filter. nscript expands asterixes and other glob patterns automatically
-		$$filetype ? '**/*.'+ $$filetype : '**/*',
-		'/dev/null'
-	))
-		console.log("No matches found for '" + $0 +"'");
+module.exports = function(shell, echo, $beard) {
+  var hasMustache;
+  if ($beard)
+    echo("Awesome, you invoked this script with --beard. You probably have one.")
+  else
+    hasMustache = shell.prompt("Do you have a mustache at least?","y") == "y";
+  if (!$beard && !hasMustache)
+    shell.exit(1, "Epic fail.");
+}
+``` 
+
+```
+$ ./unixian.js
+Do you have a mustache at least? [y]: n
+Epic fail.
+$ 
+```
+
+## nscript primer
+
+An `nscript` script is just a function exposed by a CommonJS module, preceded by a hashbang. The first parameter passes in the `shell` object, other parameternames are filled with wrapped executables with the same name. Use `$flag` or `$$param` as parameter names to make it possible for users to pass in arguments to your script. 
+
+```javascript
+#!/usr/bin/nscript
+module.exports = function(shell, grep, ls, cat, echo) {
+	
+  // run a command
+  // bash: echo hello world
+  echo("hello","world")
+
+  // use shell expansions
+  // bash: echo src/*.js
+  echo("src/*.js")
+
+  // prevent shell expansion
+  // bash: echo 'src/*.js'
+  echo(["src/*.js"])
+
+  // obtain output
+  var result = echo.get("hello","world");
+
+  // check exit status
+  // bash: echo hello world; echo $?
+  var exitCode = echo.code("hello","world");
+
+  // pipe processes
+  // bash: ls src/ | grep '.js' | sort -i
+  ls.pipe("src/").pipe("grep", ".js").run("sort", "-i")
+
+  // supress output
+  // bash: ls > /dev/null
+  ls.silent().run();
+  // .run() can also be written as ()
+  ls.silent()();
+
+  // write output to file
+  // bash: ls > dir.txt
+  ls.writeTo('dir.txt').run()
+
+  // append output to file
+  // bash: ls >> dir.txt
+  ls.appendTo('dir.txt').run()
+
+  // read input from file
+  // bash: grep milk < groceries.txt
+  grep.readFrom('groceries.txt').run('milk')
+
+  // pipe data into a process
+  // bash: echo "some\ndata" | sort
+  sort.read("some\ndata").run()
+
+  // prompt for input
+  // bash: echo "Your age?"; read $MYVAR
+  var myvar = shell.prompt("Your age?")
 }
 ```
 
