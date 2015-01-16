@@ -77,7 +77,8 @@ shell.nscript = require('./index.js'); //Function
  * @return {function}             [description]
  */
 shell.alias = function() {
-	//special case: people might try to alias the cd command which is a shell built-in, not an executable
+	// special case: people might try to alias the cd command which is a shell built-in, not an executable
+	// TODO: allow alias any build-in shell function, such as run
 	if (arguments[0] == "cd") {
 		var args = toArray(arguments);
 		return function(dir) {
@@ -171,7 +172,10 @@ shell.files = function(dir) {
 };
 
 /**
- * shell.buildCompile[Async](globPattern, transformFunction(files, callback?))
- * shell.buildTransform[Async](globPattern, transformFunction(file, callback?))
- * shell.buildWatch();
+ * shell.build.Compile[Async](globPattern, transformFunction(files, callback?))
+ * shell.build.Transform[Async](globPattern, transformFunction(file, callback?))
+ * shell.build.Watch();
+ * shell.build.isModified()
+ * shell.build.resetModifiedCache()
+ * shell.build.markUnmodified
  */

@@ -46,13 +46,8 @@ exports.prompt = function(prompt, defaultValue) {
 	else
 		rl = readline.createInterface(process.stdin, process.stdout);
 
-	if (defaultValue)
-		rl.setPrompt("" + prompt + " [" + defaultValue + "]: ");
-	else
-		rl.setPrompt("" + prompt + " ");
-	rl.prompt();
-	rl.once('line', function(line) {
-		future.return(line.trim() || defaultValue || "");
+	rl.question("" + prompt + (defaultValue ? " [" + defaultValue + "]: " : " "), function(line) {
+		future.return(line);
 	});
 	var line = future.wait();
 
@@ -63,7 +58,7 @@ exports.prompt = function(prompt, defaultValue) {
 
 	if (shell.verbose())
 		console.log(colors.gray("User input: " + line));
-	return line;
+	return line.trim() || defaultValue || "";
 }
 
 exports.pause = function() {

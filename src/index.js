@@ -20,10 +20,9 @@ var runNscriptFunction = module.exports = function(func) {
 	//parse and args
 
 	if (typeof func !== "function")
-		throw "Not a function: " + func + ", the script file should be in the form 'module.exports = function(shell) { }'";
+		throw "Not a function: " + func + ", the script file should be in the form 'module.exports = function(shell) { }' or 'require(\"nscript\")(function(shell) { })";
 	var args = utils.extractFunctionArgumentNames(func);
 	args = injectArguments(args, [].concat(scriptArgs));
-	args[0] = shell;
 	//invoke
 	new Fiber(function() {
 		func.apply(null, args);

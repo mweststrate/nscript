@@ -22,6 +22,11 @@ exports.testPipe = function(test) {
 	withShell(function(shell) {
 		test.equals(shell.pipe("echo","hi").code("cat"),0);
 		test.equals(shell.pipe("echo","hi").get("cat"),"hi\n");
+		test.equals(
+			shell.pipe("echo","hi")
+			.get("sh","-c",["read -p test BLABLA; echo $BLABLA"]),
+			"hi\n"
+		);
 
 		test.done();
 	});
@@ -29,6 +34,7 @@ exports.testPipe = function(test) {
 
 exports.testPrompt = function(test) {
 	withShell(function(shell) {
+		shell.verbose(false);
 		test.equals(
 			shell.read("hi")
 			.code(createTempScript(shell,"if ('hi' !== shell.prompt('<testing>')) throw 'fail';")),
@@ -39,10 +45,11 @@ exports.testPrompt = function(test) {
 			.code(createTempScript(shell,"if ('hi' !== shell.prompt('<testing>','hi')) throw 'fail';")),
 			0
 		);
+		var prompter = createTempScript(shell,"var x;if ('hi' !== (x = shell.prompt('<testing>'))) throw 'fail:'+x;");
 		test.equals(
 			shell.pipe("echo","hi")
 			//.code("cat"),
-			.code(createTempScript(shell,"var x;if ('hi' !== (x = shell.prompt('<testing>'))) throw 'fail:'+x;")),
+			.code(prompter),
 			0
 		);
 		test.equals(
@@ -50,6 +57,7 @@ exports.testPrompt = function(test) {
 			0
 		);
 
+		shell.verbose(false);
 		test.done();
 	});
 }

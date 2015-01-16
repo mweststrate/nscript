@@ -50,12 +50,11 @@ exports.hello3 = function(test) {
 
 exports.hello2 = function(test) {
 	withShell(function(shell) {
-		var verboseOutput = "Starting nscript test/scripts/hello-params.jsmichel\nStarting: echo hello michel\nhello michel\nFinished with exit code: 0\nFinished in 0 seconds"
 		test.equals(shell.get('test/scripts/hello-params.js','michel').trim(), 'hello michel');
 		test.equals(shell.get('test/scripts/hello-params.js',{greeting: "hi"},'michel').trim(), 'hi michel');
 		test.equals(shell.get('test/scripts/hello-params.js','michel','--greeting', 'hi').trim(), 'hi michel');
 
-		test.equals(shell.get('nscript', '-v', 'test/scripts/hello-params.js','michel').trim(), verboseOutput);
+		test.notEqual(shell.get('nscript', '-v', 'test/scripts/hello-params.js','michel').trim(), 'hello michel');
 		test.equals(shell.get('nscript', '-C','test/scripts', 'hello-params.js','michel').trim(), 'hello michel');
 		test.equals(shell.get('node', '.', '-C','test/scripts', 'hello-params.js','michel').trim(), 'hello michel');
 		test.done();

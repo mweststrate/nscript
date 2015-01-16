@@ -116,9 +116,8 @@ exports.spawn = function(commandAndArgs, opts) {
 			opts.onError ? 'pipe' : (opts.stderr ? opts.stderr : (opts.silent ? 'ignore' : 2))
 		]
 	});
-	if (opts.stdin && typeof opts.stdin != "number") {
-		opts.stdin.pipe(child.stdin);
-	}
+	if (opts.stdin && typeof opts.stdin != "number")
+		opts.stdin.pipe(child.stdin, { end: true });
 	if (opts.onOut)
 		child.stdout.on('data', opts.onOut);
 	if (opts.onError)
@@ -132,7 +131,7 @@ exports.spawn = function(commandAndArgs, opts) {
 		if (code < 0)
 			console.log(shell.colors.bold(shell.colors.red("Failed to start the child process: " + code)));
 		else if (shell.verbose())
-			console.log(shell.colors.bold(shell.colors[code === 0 ? 'green' : 'red']("Finished with exit code: " + code)));
+			console.log(shell.colors.bold(shell.colors[code === 0 ? 'green' : 'red']("[-] Done: '" + command + "': " + code)));
 		if (!opts.detached)
 			repl.resume();
 		if (opts.blocking) {
