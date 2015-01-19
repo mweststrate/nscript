@@ -49,15 +49,16 @@ shell.nscript = require('./index.js'); //Function
 
 (function() {
 	var tmpCommand = command();
-	for(var key in tmpCommand) if (tmpCommand.hasOwnProperty(key) && utils.isFunction(tmpCommand[key])) {
-		shell[key] = function(key) {
-			return function() {
-				var cmd = new command();
-				return cmd[key].apply(cmd, arguments);
-			}
-		}(key); //capture key in inner-scope
+
+	function wrapper(funcName) {
+		var cmd = new command();
+		return cmd[funcName].apply(cmd, utils.tail(toArray(arguments)));
 	}
-}())
+
+	for(var key in tmpCommand) if (tmpCommand.hasOwnProperty(key) && utils.isFunction(tmpCommand[key])) {
+		shell[key] = wrapper.bind(null, key);
+	}
+}());
 
 
 
@@ -78,14 +79,13 @@ shell.nscript = require('./index.js'); //Function
  */
 shell.alias = function() {
 	// special case: people might try to alias the cd command which is a shell built-in, not an executable
-	// TODO: allow alias any build-in shell function, such as run
+	// FEATURE: allow alias any build-in shell function, such as run
 	if (arguments[0] == "cd") {
 		var args = toArray(arguments);
 		return function(dir) {
 			return shell.cd(args.length ? args[0] : dir);
 		};
 	}
-	//TODO: check existence of command
 	return command.apply(null, arguments);
 };
 
@@ -100,6 +100,10 @@ shell.exit = function(status, message) {
 		console.log(colors.bold(colors[status === 0 ? 'green':'red']("Exiting with status: " + status)));
 	process.exit(status);
 };
+
+// FEATURE: prompt with grabchar and repeat on wrong answer:
+// shell.prompt(prompt, opts, default)
+// e.g. shell.prompt("Delete file? ", "yn", "y") -> 'Delete file? [Y/n]: '
 
 shell.prompt = function(prompt, defaultValue) {
 	return repl.prompt(prompt, defaultValue);
@@ -156,10 +160,12 @@ shell.isDir = function(path) {
 	}
 };
 
+//TODO: rename to writeFile, or just write?
 shell.writeString = function(filename, text) {
 	fs.writeFileSync(spawn.expandArgument(filename), "" + text, { encoding: 'utf8' });
 };
 
+//TODO: rename to readFile, or just read?
 shell.readString = function(filename) {
 	return fs.readFileSync(spawn.expandArgument(filename), { encoding: 'utf8' });
 };
@@ -178,4 +184,6 @@ shell.files = function(dir) {
  * shell.build.isModified()
  * shell.build.resetModifiedCache()
  * shell.build.markUnmodified
+ * shell.lastModified(filename)
+ * shell.md5(filename)
  */

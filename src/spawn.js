@@ -19,7 +19,6 @@ var glob = require('glob');
  * State
  */
 var nextInputStream = null;
-var lastCommand = "";
 var globOptions = {nocomment:true}; //see: https://github.com/isaacs/node-glob/issues/152
 
 var expandArgument = exports.expandArgument = function(arg, applyGlobbing) {
@@ -60,7 +59,7 @@ fixLocalScript = function(scriptName) {
 	if (shell.isFile(scriptName))
 		return "./" + scriptName;
 	return scriptName;
-}
+};
 
 /*
  * Methods
@@ -98,7 +97,7 @@ exports.spawn = function(commandAndArgs, opts) {
 	commandAndArgs = expandArguments(commandAndArgs);
 	commandAndArgs.unshift(executable);
 
-	var command = lastCommand = commandAndArgs.join(" ");
+	var command = commandAndArgs.join(" ");
 	if (!opts.detached)
 		repl.pause();
 	var future = opts.blocking ? new Future() : null;

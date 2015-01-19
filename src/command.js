@@ -17,24 +17,24 @@ var command = module.exports = function() {
 		return spawn.spawn(baseArgs.concat(args), opts);
 	}
 
-	//TODO: rename runner to command
-	var runner = function() {
+	var cmd = function() {
 		return spawnHelper(toArray(arguments));
 	};
 
-	runner.run = runner; //e.g. silent()('ls') === silent().run('ls');
+	cmd.boundArgs = baseArgs;
+	cmd.run = cmd; //e.g. silent()('ls') === silent().run('ls');
 
-	runner.silent = function() {
+	cmd.silent = function() {
 		nextOptions.silent = true;
-		return runner;
+		return cmd;
 	};
 
-	runner.relax = function() {
+	cmd.relax = function() {
 		nextOptions.throwOnError = false;
-		return runner;
+		return cmd;
 	};
 
-	runner.get = function() {
+	cmd.get = function() {
 		var buffer = "";
 		spawnHelper(toArray(arguments), {
 			onOut : function(data) {
@@ -44,7 +44,7 @@ var command = module.exports = function() {
 		return buffer;
 	};
 
-	runner.getError = function() {
+	cmd.getError = function() {
 		var buffer = "";
 		spawnHelper(toArray(arguments), {
 			onError : function(data) {
@@ -66,20 +66,27 @@ var command = module.exports = function() {
 		var fd = fs.openSync(filename, flags);
 		//TODO: Check that stdout isn't defined yet!
 		nextOptions.stdout = fd;
-		return runner;
+		return cmd;
 	}
 
-	runner.writeTo = outputToFile.bind(null, 'w');
-	runner.appendTo = outputToFile.bind(null, 'a');
+	cmd.writeTo = outputToFile.bind(null, 'w');
+	cmd.appendTo = outputToFile.bind(null, 'a');
+
+	//TODO: cmd.writeErrorTo
+	//TODO: cmd.appendErrorTo
 
 	/**
 	 * Possible alternative syntax:
 	 * cat.stream("**.js").writeTo / appendTo / pipe("other command")
 	 * grep.read(cat.stream("**.js")).stream("bla.txt").writeTo("bla")
+	 *
+	 * cat.pipe(sort).run('-u')
+	 * cat.pipe("sort").run('-u')
+	 * cat.pipe().run('-u')
 	 */
 
-	//TODO: runner.stream()
-	runner.pipe = function() {
+	//TODO: cmd.stream()
+	cmd.pipe = function() {
 		var child = spawnHelper(toArray(arguments), {
 			blocking: false,
 			throwOnError: false,
@@ -90,7 +97,7 @@ var command = module.exports = function() {
 		//TODO: add guard that input / inputFile isn't called!
 	};
 
-	runner.read = function(input) {
+	cmd.read = function(input) {
 		//TODO: check stdin not setyet
 		if (typeof(input) == "number" || (input && input.pipe)) {
 			nextOptions.stdin = input;
@@ -104,29 +111,30 @@ var command = module.exports = function() {
 			};
 			nextOptions.stdin = bufferStream;
 		}
-		return runner;
+		return cmd;
 	};
 
-	runner.readFrom = function(filename) {
+	cmd.readFrom = function(filename) {
 		//TODO: check stdin not setyet
-		//TODO: expand filename!
+		filename = spawn.expandArgument(filename, false);
 		if (shell.verbose())
 			console.log('< ' + filename);
 		nextOptions.stdin = fs.openSync(filename, 'r');
-		return runner;
+		return cmd;
 	};
 
-	runner.code = function() {
+	cmd.code = function() {
 		return spawnHelper(toArray(arguments), {
 			throwOnError : false
 		});
 	};
 
-	runner.test = function() {
-		return runner.code.apply(this, arguments) === 0;
+	cmd.test = function() {
+		return cmd.code.apply(this, arguments) === 0;
 	};
 
-	runner.detach = function() {
+
+	cmd.detach = function() {
 		var child = spawnHelper(toArray(arguments), {
 			blocking: false,
 			throwOnError: false,
@@ -137,7 +145,6 @@ var command = module.exports = function() {
 		return child.pid;
 	};
 
-	runner.boundArgs = baseArgs;
-
-	return runner;
+	//FEATURE: cmd.background: run stuff in background, but kill it when the process exits
+	return cmd;
 };

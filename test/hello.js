@@ -5,8 +5,6 @@ var Fiber = require('fibers');
  * This files tests the nscript CLI, including parameter passing and making scripts executable
  */
 
-//TODO: replace michel with shell.env.USER
-
 //wrap in fiber
 function withShell(f) {
 	new Fiber(function() {
@@ -41,12 +39,12 @@ exports.hello1 = function(test) {
 
 		test.done();
 	});
-}
+};
 
 exports.hello3 = function(test) {
 	require('./scripts/hello3.js').run();
 	test.done();
-}
+};
 
 exports.hello2 = function(test) {
 	withShell(function(shell) {
@@ -59,7 +57,7 @@ exports.hello2 = function(test) {
 		test.equals(shell.get('node', '.', '-C','test/scripts', 'hello-params.js','michel').trim(), 'hello michel');
 		test.done();
 	});
-}
+};
 
 exports.touch = function(test) {
 	withShell(function(shell) {
@@ -82,4 +80,4 @@ exports.touch = function(test) {
 
 		test.done();
 	});
-}
+};

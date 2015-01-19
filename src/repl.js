@@ -1,4 +1,5 @@
 var repl = require('repl');
+var util = require('util');
 var colors = require('colors/safe');
 var stream = require('stream');
 var readline = require('readline');
@@ -9,6 +10,7 @@ var shell = require('./shell.js');
 var pauseCount = 0;
 var replServer = null;
 var supressEval = false;
+var homedir = require('home-dir').directory;
 
 var start = exports.start = function() {
 	replServer = repl.start({
@@ -19,7 +21,8 @@ var start = exports.start = function() {
 		useColors: true
 	});
 
-	var baseEval = replServer.eval;
+	/*jshint: eval:true*/
+	var baseEval = replServer.eval; //avoid jshint trigger happiness on everything that seems eval
 	replServer.eval = function() {
 		if (!supressEval) {
 			var args = arguments;
@@ -31,8 +34,15 @@ var start = exports.start = function() {
 };
 
 function getPrompt() {
-	return "[" + shell.cwd() + "] $ "; //TODO: replace homedir
+	var dir = shell.cwd();
+	if (dir.indexOf(homedir) === 0)
+		dir = "~" + dir.substr(homedir.length);
+	return "[nscript] " + dir + " $ ";
+	// FEATURE: support colors, needs readline fix for cursor offset!
+	//return "[nscript] " + colors.gray(dir) + colors.bold(colors.blue(" $ "));
 }
+
+
 
 exports.prompt = function(prompt, defaultValue) {
 	var useRepl = replServer !== null;
@@ -59,7 +69,7 @@ exports.prompt = function(prompt, defaultValue) {
 	if (shell.verbose())
 		console.log(colors.gray("User input: " + line));
 	return line.trim() || defaultValue || "";
-}
+};
 
 exports.pause = function() {
 	if (replServer && pauseCount === 0) {

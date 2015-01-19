@@ -60,10 +60,10 @@ exports.testPrompt = function(test) {
 		shell.verbose(false);
 		test.done();
 	});
-}
+};
 
 function createTempScript(shell, script) {
-	var s = "/tmp/nscript_tmp_" + shell.pid
+	var s = "/tmp/nscript_tmp_" + shell.pid;
 	shell.writeString(s, "#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}");
 	shell("chmod","+x", s);
 	return s;

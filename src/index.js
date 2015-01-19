@@ -43,7 +43,7 @@ var injectArguments = runNscriptFunction.injectArguments = function(argNames, va
 	var secondPass = false;
 	var validOptions = [path.basename(process.argv[2])];
 	var argsRequired = -1;
-	var parseParams = !!argNames.filter(function(x){return x.indexOf("$") === 0 }).length;
+	var parseParams = !!argNames.filter(function(x){return x.indexOf("$") === 0; }).length;
 
 	//TODO: support predefined --verbose --change-dir --help --version
 	function onArg(argName, index) {
@@ -140,7 +140,7 @@ function runScriptFile(scriptFile)  {
 function touchScript(scriptFile, local) {
 	if (fs.existsSync(scriptFile))
 		throw "File '" + scriptFile + "' already exists";
-	console.log("Generating default script in '" + scriptFile + "' " + (local?"[using local nscript]":""))
+	console.log("Generating default script in '" + scriptFile + "' " + (local?"[using local nscript]":""));
 	var demoFunc = [
 		"function(shell, echo, $0) {",
 		"\t/* This script is powered by 'nscript', see the docs at https://github.com/mweststrate/nscript */",
@@ -158,11 +158,11 @@ function makeExecutable(scriptFile, local) {
 	if (!fs.existsSync(scriptFile))
 		throw "Filed doesn't exist: " + scriptFile;
 	if (process.platform === 'windows') {
-		console.log("Generating executable script in '" + scriptFile + ".bat' " + (local?"[using local nscript]":""))
-		shell.writeTo(scriptFile + ".bat", (local ? "node " : "nscript ") + path.basename(scriptFile) + " %+");
+		console.log("Generating executable script in '" + scriptFile + ".bat' " + (local?"[using local nscript]":""));
+		shell.writeString(scriptFile + ".bat", (local ? "node " : "nscript ") + path.basename(scriptFile) + " %+");
 	}
 	else {
-		console.log("Marking script as executable: '" + scriptFile + "' " + (local?"[using local nscript]":""))
+		console.log("Marking script as executable: '" + scriptFile + "' " + (local?"[using local nscript]":""));
 		shell.nscript(function(shell, cp, chmod, rm, echo, cat) {
 			var contents = shell.readString(scriptFile);
 			if (contents[0] != '#' || contents[1] != '!')
