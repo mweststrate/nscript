@@ -2,9 +2,9 @@
   "name": "nscript",
   "version": "0.0.2",
   "description": "Javascript powered shell scripts",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "bin": {
-    "nscript": "src/index.js"
+    "nscript": "lib/index.js"
   },
   "dependencies": {
     "colors": "^1.0.3",

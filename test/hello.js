@@ -1,4 +1,4 @@
-var nscript = require('../src/index.js');
+var nscript = require('../lib/index.js');
 var Fiber = require('fibers');
 
 /**
@@ -9,7 +9,7 @@ var Fiber = require('fibers');
 function withShell(f) {
 	new Fiber(function() {
 		try {
-			f(require('../src/shell.js'));
+			f(require('../lib/shell.js'));
 		}
 		catch (e) {
 			console.error(e);

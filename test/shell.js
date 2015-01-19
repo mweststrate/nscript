@@ -1,4 +1,4 @@
-var nscript = require('../src/index.js');
+var nscript = require('../lib/index.js');
 var Fiber = require('fibers');
 var buffer = require('buffer');
 
@@ -8,7 +8,7 @@ var buffer = require('buffer');
 function withShell(f) {
 	new Fiber(function() {
 		try {
-			f(require('../src/shell.js'));
+			f(require('../lib/shell.js'));
 		}
 		catch(e) {
 			console.error(e);
@@ -40,9 +40,9 @@ exports.testShell = function(test) {
 
 		test.ok(shell.pid);
 		test.ok(shell.env.USER);
-		test.equals(shell.env.USER,shell.get("whoami").trim())
+		test.equals(shell.env.USER,shell.get("whoami").trim());
 
-		test.deepEqual(shell.glob("**/command.js"),["src/command.js", "test/command.js"]);
+		test.deepEqual(shell.glob("**/command.js"),["lib/command.js", "test/command.js"]);
 
 		shell.code("false");
 		test.deepEqual(shell.lastExitCode, 1);
@@ -59,7 +59,7 @@ exports.testShell = function(test) {
 			test.done();
 		});
 	});
-}
+};
 
 exports.testCd = function(test) {
 	withShell(function(shell) {
@@ -67,18 +67,18 @@ exports.testCd = function(test) {
 		var base = process.cwd() + "/";
 		test.equals(shell.cwd(), base);
 		shell.cd("node_modules");
-		shell.get("ls").indexOf("glob") != -1;
+		test.notEqual(shell.get("ls").indexOf("glob"),-1);
 		test.equals(shell.cwd(), base + "node_modules/");
 
 		shell.cd();
 		test.equals(shell.cwd(), base);
 		shell.cd("node_modules/glob");
-		shell.get("ls").indexOf("safe.js") != -1;
+		test.notEqual(shell.get("ls").indexOf("sync.js"),-1);
 
 		test.ok(shell.env.USER);
 		test.equals(shell.get("whoami").trim(),shell.env.USER);
 		shell.cd("/home/");
-		shell.get("ls").indexOf(shell.env.USER) != -1;
+		test.notEqual(shell.get("ls").indexOf(shell.env.USER), -1);
 
 		shell.cd("~/Desktop");
 		test.equals(shell.cwd(), "/home/" + shell.env.USER + "/Desktop/");
@@ -90,12 +90,12 @@ exports.testCd = function(test) {
 		test.equals(shell.pwd(), base);
 		test.done();
 	});
-}
+};
 
 exports.testUtils = function(test) {
 	withShell(function(shell) {
 		var txtFile = "/tmp/" + shell.pid + "_tmp_txt";
-		shell.writeString(txtFile,"abc\u2342de")
+		shell.writeString(txtFile,"abc\u2342de");
 		test.equals(shell.readString(txtFile), "abc\u2342de");
 
 		cd('test');
@@ -118,10 +118,10 @@ exports.testUtils = function(test) {
 		cd();
 		test.done();
 	});
-}
+};
 
 function tempScript(shell, script) {
-	var s = "/tmp/nscript_tmp_" + shell.pid
+	var s = "/tmp/nscript_tmp_" + shell.pid;
 	shell.writeTo(s)("echo",["#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}"]);
 	shell("chmod","+x", s);
 	return s;

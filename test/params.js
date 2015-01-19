@@ -1,8 +1,8 @@
-var utils = require('../src/utils.js');
-var nscript = require('../src/index.js');
-var shell = require('../src/shell.js');
+var utils = require('../lib/utils.js');
+var nscript = require('../lib/index.js');
+var shell = require('../lib/shell.js');
 var tail = utils.tail;
-var spawn = require('../src/spawn.js');
+var spawn = require('../lib/spawn.js');
 
 /**
  * This file tests several utility functions to glob, parse args, expand arguments etc.
@@ -62,7 +62,6 @@ exports.testParamInjection = function(test) {
 		return tail(nscript.injectArguments.apply(null, arguments));
 	}
 	try {
-		debugger;
 		test.deepEqual(i(["x","$bla"], ["--bla"]), [true]);
 		test.deepEqual(i(["x","$$bla"], ["--bla", "boe"]), ["boe"]);
 		test.deepEqual(i(["x","$$bla"], ["--bla", "--boe"]), ["--boe"]);
@@ -82,7 +81,7 @@ exports.testParamInjection = function(test) {
 		}
 		catch (e) {
 			//TODO: fix script name, should not be present in this case?
-			test.equal(e, 'Invalid option \'--bla\'. \nUsage: test [-a <value>] [--boe]');
+			test.equal(e, 'Invalid option \'--bla\'. \nUsage: [-a <value>] [--boe]');
 		}
 	/*	try {
 			console.log('test');

@@ -8,11 +8,11 @@
 
 var helloWorld = module.exports = function(shell) {
 	shell.run('echo', 'hello', 'world');
-}
+};
 
 helloWorld.run = function() {
 	require('../../')(helloWorld);
-}
+};
 
 if (require.main === module)
 	helloWorld.run();
