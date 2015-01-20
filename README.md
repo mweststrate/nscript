@@ -15,23 +15,23 @@ module.exports = function(shell, echo, $beard) {
   if (!$beard && !hasMustache)
     shell.exit(1, "Epic fail.");
 }
-``` 
+```
 
 ```
 $ ./unixian.js
 Do you have a mustache at least? [y]: n
 Epic fail.
-$ 
+$
 ```
 
 ## nscript primer
 
-An `nscript` script is just a function exposed by a CommonJS module, preceded by a hashbang. The first parameter passes in the `shell` object, other parameternames are filled with wrapped executables with the same name. Use `$flag` or `$$param` as parameter names to make it possible for users to pass in arguments to your script. 
+An `nscript` script is just a function exposed by a CommonJS module, preceded by a hashbang. The first parameter passes in the `shell` object, other parameternames are filled with wrapped executables with the same name. Use `$flag` or `$$param` as parameter names to make it possible for users to pass in arguments to your script.
 
 ```javascript
 #!/usr/bin/nscript
-module.exports = function(shell, grep, ls, cat, echo) {
-	
+module.exports = function(shell, grep, ls, cat, echo, gedit) {
+
   // run a command
   // bash: echo hello world
   echo("hello","world")
@@ -80,6 +80,10 @@ module.exports = function(shell, grep, ls, cat, echo) {
   // prompt for input
   // bash: echo "Your age?"; read $MYVAR
   var myvar = shell.prompt("Your age?")
+
+  // start a process in the background
+  // bash: gedit myfile.txt &
+  gedit.detach("myfile.txt");
 }
 ```
 

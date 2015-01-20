@@ -53,12 +53,12 @@ exports.testCommand = function(test) {
 		test.equals(shell.alias().read("hi").get("cat"),"hi\n");
 		test.equals(shell.alias().read(new buffer.Buffer("hi")).get("cat"),"hi\n");
 
-		test.equals(shell.alias().writeTo("/tmp/nscript_" + shell.pid)("echo","hi"), 0)
-		test.equals(shell.alias().appendTo("/tmp/nscript_" + shell.pid)("echo","hi"), 0)
+		test.equals(shell.alias().stream("echo", "hi").writeTo("/tmp/nscript_" + shell.pid).code(), 0);
+		test.equals(shell.stream("echo", "hi").appendTo("/tmp/nscript_" + shell.pid).code(), 0);
 		test.equals(shell.alias().readFrom("/tmp/nscript_" + shell.pid).get("cat"),"hi\nhi\n");
 
 		//test silent:
-		test.equals(shell.alias().writeTo("/tmp/nscript_" + shell.pid)("echo","module.exports=function(shell,echo){echo.silent()(3);echo(2);}"), 0);
+		test.equals(shell.stream("echo",["module.exports=function(shell,echo){echo.silent()(3);echo(2);}"]).writeTo("/tmp/nscript_" + shell.pid).code(), 0);
 		test.equals(shell.get("nscript","/tmp/nscript_" + shell.pid),"2\n");
 
 		test.equals(shell.relax()("false"),1);
@@ -69,13 +69,13 @@ exports.testCommand = function(test) {
 		//TODO: add test for relax() + -1 (not spawning), should fail
 
 		//test detach and pipe
-		var now = +(new Date);
+		var now = +(new Date());
 		var pid = shell.detach("sleep",3);
-		test.ok(+(new Date) - now < 2000);
+		test.ok(+(new Date()) - now < 2000);
 
 		test.equals(shell.get("ps", "h", pid).trim().split("\n").length, 1);
 		//both grep and sleep might appear in ps aux
-		test.ok(shell.pipe("ps","auxh").get("grep",pid).trim().split("\n").length >= 1)
+		test.ok(shell.stream("ps","auxh").pipe("grep").get(pid).trim().split("\n").length >= 1);
 
 		setTimeout(function() {
 			//pid is now killed,
@@ -84,10 +84,10 @@ exports.testCommand = function(test) {
 				test.equals(shell.test("ps","h",pid),false);
 				test.done();
 			});
-		}, 5000)
+		}, 5000);
 
 	});
-}
+};
 
 function tempScript(shell, script) {
 	var s = "/tmp/nscript_tmp_" + shell.pid
