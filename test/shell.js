@@ -98,7 +98,7 @@ exports.testUtils = function(test) {
 		shell.writeString(txtFile,"abc\u2342de");
 		test.equals(shell.readString(txtFile), "abc\u2342de");
 
-		cd('test');
+		shell.cd('test');
 		test.equals(shell.isDir('scripts'), true);
 		test.equals(shell.isFile('scripts'), false);
 		test.equals(shell.isDir('command.js'), false);
@@ -111,18 +111,18 @@ exports.testUtils = function(test) {
 
 		test.deepEqual(shell.files('scripts'), ['scripts/hello-params.js', 'scripts/hello1.js','scripts/hello2.js', 'scripts/hello3.js']);
 
-		cd('scripts');
+		shell.cd('scripts');
 		test.deepEqual(shell.files('.'), ['hello-params.js', 'hello1.js','hello2.js', 'hello3.js']);
 		test.deepEqual(shell.files(), ['hello-params.js', 'hello1.js','hello2.js', 'hello3.js']);
 
-		cd();
+		shell.cd();
 		test.done();
 	});
 };
 
 function tempScript(shell, script) {
 	var s = "/tmp/nscript_tmp_" + shell.pid;
-	shell.writeTo(s)("echo",["#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}"]);
+	shell.streams("echo",["#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}"]).out(s);
 	shell("chmod","+x", s);
 	return s;
 }

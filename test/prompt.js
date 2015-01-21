@@ -20,11 +20,12 @@ function withShell(f) {
 
 exports.testPipe = function(test) {
 	withShell(function(shell) {
-		test.equals(shell.pipe("echo","hi").code("cat"),0);
-		test.equals(shell.pipe("echo","hi").get("cat"),"hi\n");
+		test.equals(shell.streams("echo","hi").pipe("cat").code(),0);
+		test.equals(shell.streams("echo","hi").pipe("cat").get(),"hi\n");
 		test.equals(
-			shell.pipe("echo","hi")
-			.get("sh","-c",["read -p test BLABLA; echo $BLABLA"]),
+			shell.alias("echo","hi")
+			.pipe("sh","-c",["read -p test BLABLA; echo $BLABLA"])
+			.get(),
 			"hi\n"
 		);
 
@@ -36,20 +37,20 @@ exports.testPrompt = function(test) {
 	withShell(function(shell) {
 		shell.verbose(false);
 		test.equals(
-			shell.read("hi")
+			shell.input("hi")
 			.code(createTempScript(shell,"if ('hi' !== shell.prompt('<testing>')) throw 'fail';")),
 			0
 		);
 		test.equals(
-			shell.read("")
+			shell.input("")
 			.code(createTempScript(shell,"if ('hi' !== shell.prompt('<testing>','hi')) throw 'fail';")),
 			0
 		);
 		var prompter = createTempScript(shell,"var x;if ('hi' !== (x = shell.prompt('<testing>'))) throw 'fail:'+x;");
 		test.equals(
-			shell.pipe("echo","hi")
+			shell.streams("echo","hi").pipe(prompter)
 			//.code("cat"),
-			.code(prompter),
+			.code(),
 			0
 		);
 		test.equals(

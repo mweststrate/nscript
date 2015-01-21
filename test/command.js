@@ -50,15 +50,15 @@ exports.testCommand = function(test) {
 
 		test.equals(shell.alias().get('test/scripts/hello1.js'), "hello world\n");
 
-		test.equals(shell.alias().read("hi").get("cat"),"hi\n");
-		test.equals(shell.alias().read(new buffer.Buffer("hi")).get("cat"),"hi\n");
+		test.equals(shell.alias().input("hi").get("cat"),"hi\n");
+		test.equals(shell.alias().input(new buffer.Buffer("hi")).get("cat"),"hi\n");
 
-		test.equals(shell.alias().stream("echo", "hi").writeTo("/tmp/nscript_" + shell.pid).code(), 0);
-		test.equals(shell.stream("echo", "hi").appendTo("/tmp/nscript_" + shell.pid).code(), 0);
-		test.equals(shell.alias().readFrom("/tmp/nscript_" + shell.pid).get("cat"),"hi\nhi\n");
+		test.equals(shell.alias().streams("echo", "hi").out("/tmp/nscript_" + shell.pid).code(), 0);
+		test.equals(shell.streams("echo", "hi").append("/tmp/nscript_" + shell.pid).code(), 0);
+		test.equals(shell.alias().in("/tmp/nscript_" + shell.pid).get("cat"),"hi\nhi\n");
 
 		//test silent:
-		test.equals(shell.stream("echo",["module.exports=function(shell,echo){echo.silent()(3);echo(2);}"]).writeTo("/tmp/nscript_" + shell.pid).code(), 0);
+		test.equals(shell.streams("echo",["module.exports=function(shell,echo){echo.silent()(3);echo(2);}"]).out("/tmp/nscript_" + shell.pid).code(), 0);
 		test.equals(shell.get("nscript","/tmp/nscript_" + shell.pid),"2\n");
 
 		test.equals(shell.relax()("false"),1);
@@ -75,7 +75,7 @@ exports.testCommand = function(test) {
 
 		test.equals(shell.get("ps", "h", pid).trim().split("\n").length, 1);
 		//both grep and sleep might appear in ps aux
-		test.ok(shell.stream("ps","auxh").pipe("grep").get(pid).trim().split("\n").length >= 1);
+		test.ok(shell.streams("ps","auxh").pipe("grep",pid).get().trim().split("\n").length >= 1);
 
 		setTimeout(function() {
 			//pid is now killed,

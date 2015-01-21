@@ -53,29 +53,31 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
 
   // pipe processes
   // bash: ls src/ | grep '.js' | sort -i
-  ls.pipe("src/").pipe("grep", ".js").run("sort", "-i")
+  ls("src/").pipe(grep,".js").pipe(sort,"-i").wait();
 
   // supress output
   // bash: ls > /dev/null
   ls.silent().run();
-  // .run() can also be written as ()
-  ls.silent()();
 
   // write output to file
   // bash: ls > dir.txt
-  ls.writeTo('dir.txt').run()
+  ls().out('dir.txt')
 
   // append output to file
   // bash: ls >> dir.txt
-  ls.appendTo('dir.txt').run()
+  ls().append('dir.txt').wait()
 
-  // read input from file
-  // bash: grep milk < groceries.txt
-  grep.readFrom('groceries.txt').run('milk')
+  // append standard error to file
+  // bash: ls *.js 2>> errors.txt
+  ls("*.js'").errorAppend('errors.txt').run()
+
+  // read input from file and to file
+  // bash: grep milk < groceries.txt > milksonly.txt
+  grep('milk').in('groceries.txt').out('milksonly.txt')
 
   // pipe data into a process
   // bash: echo "some\ndata" | sort
-  sort.read("some\ndata").run()
+  sort().input("some\ndata").wait()
 
   // prompt for input
   // bash: echo "Your age?"; read $MYVAR
@@ -83,7 +85,7 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
 
   // start a process in the background
   // bash: gedit myfile.txt &
-  gedit.detach("myfile.txt");
+  gedit().detach("myfile.txt");
 }
 ```
 
