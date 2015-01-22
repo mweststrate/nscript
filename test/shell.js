@@ -60,6 +60,23 @@ exports.testShell = function(test) {
 		test.equals(getEcho("world"),"hello world");
 
 
+		try {
+			shell.run("false");
+			test.fail("expected exception");
+		}
+		catch (e) {
+			test.equals(e.name, 'NonZeroExitError');
+			// Got exception
+		}
+		try {
+			shell.run("foep");
+			test.fail("expected exception");
+		}
+		catch (e) {
+			test.equals(e.name, 'FailedToStartError');
+			// Got exception
+		}
+
 		shell.nscript(function(subshell, echo) {
 			test.equals(subshell.get("echo", "hi"), "hi\n");
 			test.equals(echo.get("echo"), "echo\n");
