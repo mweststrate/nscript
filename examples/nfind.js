@@ -1,4 +1,4 @@
-#!/usr/bin/nscript -v
+#!/usr/bin/nscript
 // A nscript script is just a function exposed by a CommonJS module
 // This script has multiple arguments, the search query, and optional --dir and --filetype flags
 module.exports = function(shell, grep, $$filetype, $$dir, $0) {
@@ -16,4 +16,4 @@ module.exports = function(shell, grep, $$filetype, $$dir, $0) {
 		'/dev/null'
 	))
 		console.log("No matches found for '" + $0 +"'");
-}
+};
