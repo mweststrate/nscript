@@ -37,86 +37,102 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
   echo("hello","world")
 
   // use shell expansions
-  // bash: echo src/*.js
-  echo("src/*.js")
+  // bash: cat src/*.js
+  cat("src/*.js")
+
+  // or, to display all files recusively in src/
+  cat("src/**/*.js")
 
   // prevent shell expansion
   // bash: echo 'src/*.js'
   echo(["src/*.js"])
 
   // obtain output
-  var result = echo.get("hello","world");
+  var result = echo.get("hello","world")
 
   // check exit status
   // bash: echo hello world; echo $?
-  var exitCode = echo.code("hello","world");
+  var exitCode = echo.code("hello","world")
 
   // pipe processes
   // bash: ls src/ | grep '.js' | sort -i
-  ls("src/").pipe(grep,".js").pipe(sort,"-i").wait();
+  ls("src/").pipe(grep,".js").pipe(sort,"-i").wait()
 
   // supress output
   // bash: ls > /dev/null
-  ls.silent().run();
+  ls.silent().run()
 
   // write output to file
   // bash: ls > dir.txt
-  ls().write('dir.txt');
+  ls().write('dir.txt')
 
   // append output to file
   // bash: ls >> dir.txt
-  ls().append('dir.txt');
+  ls().append('dir.txt')
 
   // append standard error to file
   // bash: ls *.js 2>> errors.txt | sort -u
-  ls("*.js'").errorAppend('errors.txt').pipe(sort, "-u'");
+  ls("*.js'").errorAppend('errors.txt').pipe(sort, "-u'")
 
   // read input from file and to file
   // bash: grep milk < groceries.txt > milksonly.txt
-  grep('milk').read('groceries.txt').write('milksonly.txt');
+  grep('milk').read('groceries.txt').write('milksonly.txt')
 
   // pipe data into a process
   // bash: echo "some\ndata" | sort
-  sort().input("some\ndata").wait();
+  sort().input("some\ndata").wait()
 
   // prompt for input
-  // bash: echo "Your age?"; read $MYVAR
+  // bash: echo -n "Your age? "; read $MYVAR
   var myvar = shell.prompt("Your age?")
 
   // start a process in the background
   // bash: gedit myfile.txt &
-  gedit().detach("myfile.txt");
+  gedit().detach("myfile.txt")
 }
 ```
+
+TODO: primer about arguments
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
-- [Introduction](#introduction)
 - [Getting started with `nscript`](#getting-started-with-nscript)
   - [Installing `nscript`](#installing-nscript)
   - [Creating and running your first script](#creating-and-running-your-first-script)
 - [Anatonomy of a `nscript`](#anatonomy-of-a-nscript)
-  - [Main `nscript` concepts](#main-nscript-concepts)
 - [API Documentation](#api-documentation)
   - [Command](#command)
+    - [command.spawn(args)](#commandspawnargs)
     - [command.run(args)](#commandrunargs)
     - [command.code(args)](#commandcodeargs)
     - [command.test(args)](#commandtestargs)
     - [command.get(args)](#commandgetargs)
-    - [command.getError(args)](#commandgeterrorargs)
-    - [command.read(data)](#commandreaddata)
-    - [command.pipe(args)](#commandpipeargs)
-    - [command.readFrom(filename)](#commandreadfromfilename)
-    - [command.writeTo(args, filename)](#commandwritetoargs-filename)
-    - [command.appendTo(args, filename)](#commandappendtoargs-filename)
+    - [command.input(data)](#commandinputdata)
+    - [command.read(filename)](#commandreadfilename)
+    - [command.pipe(cmd, args)](#commandpipecmd-args)
+    - [command.write(filename)](#commandwritefilename)
+    - [command.append(filename)](#commandappendfilename)
+    - [command.writeError(filename)](#commandwriteerrorfilename)
+    - [command.appendError(filename)](#commandappenderrorfilename)
     - [command.silent()](#commandsilent)
     - [command.relax()](#commandrelax)
     - [command.boundArgs](#commandboundargs)
     - [command.detach(args)](#commanddetachargs)
+  - [process](#process)
+    - [process.wait(), process.code(), process.test()](#processwait-processcode-processtest)
+    - [process.get(), process.getError()](#processget-processgeterror)
+    - [process.pipe(cmd, args), pipeEror(cmd, args)](#processpipecmd-args-pipeerorcmd-args)
+    - [process.write(f), append(f), writeError(f), appendError(f)](#processwritef-appendf-writeerrorf-appenderrorf)
+    - [process.onClose(callback)](#processonclosecallback)
+    - [process.onOut(callback), process.onError(callback)](#processonoutcallback-processonerrorcallback)
+    - [process.pid](#processpid)
+    - [process.child](#processchild)
   - [shell](#shell)
     - [shell.alias(boundArgs)](#shellaliasboundargs)
+    - [shell.cmd(args)](#shellcmdargs)
+    - [shell(args)](#shellargs)
     - [shell.exit(exitCode [, message])](#shellexitexitcode--message)
     - [shell.cwd()](#shellcwd)
     - [shell.cd(dir)](#shellcddir)
@@ -132,8 +148,9 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
     - [shell.files(dir)](#shellfilesdir)
     - [shell.isFile(path)](#shellisfilepath)
     - [shell.isDir(path)](#shellisdirpath)
-    - [shell.readString(path)](#shellreadstringpath)
-    - [shell.writeString(path, text)](#shellwritestringpath-text)
+    - [shell.read(path)](#shellreadpath)
+    - [shell.write(path, text)](#shellwritepath-text)
+    - [shell.run(args), shell.code(args), shell.test(args), shell.detach(args), shell.spawn(args)](#shellrunargs-shellcodeargs-shelltestargs-shelldetachargs-shellspawnargs)
   - [nscript function arguments](#nscript-function-arguments)
   - [command argument expansion](#command-argument-expansion)
 - [nscript CLI arguments](#nscript-cli-arguments)
@@ -225,7 +242,7 @@ gitLog(); //returns the current git log
 
 #### command.spawn(args)
 
-Starts the current command with the specified args. Returns a `process` object which can be used to work direct the output streams or inspect the exit code. 
+Starts the current command with the specified args. Returns a `process` object which can be used to work direct the output streams or inspect the exit code.
 
 #### command.run(args)
 
@@ -272,7 +289,7 @@ sort.read("Adelaide\nBanana\Ada").run();
 
 #### command.read(filename)
 
-Similar to `input`; opens the file `filename` and uses it as input for the next command invocation. Returns the command for chaining. Note that the file is streamed to the process, so it is a lot more memory efficient than using `input`. 
+Similar to `input`; opens the file `filename` and uses it as input for the next command invocation. Returns the command for chaining. Note that the file is streamed to the process, so it is a lot more memory efficient than using `input`.
 
 Example:
 ```javascript
@@ -309,11 +326,11 @@ Similar to `command.write`, but appends the target file rather than replacing it
 
 #### command.writeError(filename)
 
-Spawns this commands and writes its standard output stream to the specified filename. Unlike `write`, this call doesn't block until the process has finished, but rather returns the started `process`, for easy chaining. Sugar for `command.spawn().writeError()`. 
+Spawns this commands and writes its standard output stream to the specified filename. Unlike `write`, this call doesn't block until the process has finished, but rather returns the started `process`, for easy chaining. Sugar for `command.spawn().writeError()`.
 
 #### command.appendError(filename)
 
-Similar to `writeError`, but appends the file instead of replacing it. 
+Similar to `writeError`, but appends the file instead of replacing it.
 
 #### command.silent()
 
@@ -333,7 +350,7 @@ Same as `command.run`, but starts the process in the background, or `detached` m
 
 ### process
 
-Object returned by `command.spawn()`. Can be used to wait until the process finishes and redirect its outputs. 
+Object returned by `command.spawn()`. Can be used to wait until the process finishes and redirect its outputs.
 
 #### process.wait(), process.code(), process.test()
 
@@ -386,7 +403,7 @@ module.exports = function(shell, echo) {
 
 #### shell.cmd(args)
 
-just an alias for `shell.alias(args)`. 
+just an alias for `shell.alias(args)`.
 
 #### shell(args)
 
