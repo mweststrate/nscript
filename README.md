@@ -1,6 +1,6 @@
 # nscript
 
-*Write shell scripts like a bearded guru by unleashing your javascript skill*
+*Write shell scripts like a bearded guru by unleashing your javascript skills!*
 
 Writing sophisticated shell scripts is hard. But if a program just takes some input and generates some output, every **program** can be considered to be a **function**. Invoking functions and reasoning about parameters, data structures and return values is a very natural thing to do in any GPL, such as **javascript**. `nscripts` helps you to invoke shell commands in your javascript scripts. `nscript` is an excellent library to write flexible build scripts or simple command line tools. For example `unixian.js`:
 
@@ -9,12 +9,12 @@ Writing sophisticated shell scripts is hard. But if a program just takes some in
 module.exports = function(shell, echo, $beard) {
   var hasMustache;
   if ($beard)
-    echo("Awesome, you invoked this script with --beard. You probably have one.")
+    echo("Awesome, you invoked this script with --beard. You probably have one.");
   else
     hasMustache = shell.prompt("Do you have a mustache at least?","y") == "y";
   if (!$beard && !hasMustache)
     shell.exit(1, "Epic fail.");
-}
+};
 ```
 
 ```
@@ -61,23 +61,23 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
 
   // write output to file
   // bash: ls > dir.txt
-  ls().out('dir.txt')
+  ls().write('dir.txt');
 
   // append output to file
   // bash: ls >> dir.txt
-  ls().append('dir.txt').wait()
+  ls().append('dir.txt');
 
   // append standard error to file
-  // bash: ls *.js 2>> errors.txt
-  ls("*.js'").errorAppend('errors.txt').run()
+  // bash: ls *.js 2>> errors.txt | sort -u
+  ls("*.js'").errorAppend('errors.txt').pipe(sort, "-u'");
 
   // read input from file and to file
   // bash: grep milk < groceries.txt > milksonly.txt
-  grep('milk').in('groceries.txt').out('milksonly.txt')
+  grep('milk').read('groceries.txt').write('milksonly.txt');
 
   // pipe data into a process
   // bash: echo "some\ndata" | sort
-  sort().input("some\ndata").wait()
+  sort().input("some\ndata").wait();
 
   // prompt for input
   // bash: echo "Your age?"; read $MYVAR
@@ -149,10 +149,6 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Introduction
-
-`nscript` is a node.js based shell (script) interpreter which enables writing shell scripts in javascript. `nscript` is written for those that want to rely on full flexibility of shell scripts, but don't want to be bother by all the quirks of bash (or .bat) scripts. `nscript` requires no more than basic level understanding of shell scripts and javascript. `nscript` files are structured pretty similar to shell scripts, but allow you to use javascript syntax and control structures instead of the clumsy [ba/c/z]sh syntax and structures. Furthermore nscripts are highly interoperable with other javascript based development tools.
-
 ## Getting started with `nscript`
 
 ### Installing `nscript`
@@ -196,23 +192,15 @@ The lines explained in detail:
 
 1. The first line is a so called `shell bang` to indicate unix based systems how to run this script. It is basically sugar for `nscript thisfile.js`. The line is further meaningless and ignored by node.
 2. A `nscript` script exposes a single function through `module.exports`. This is the function that will be interpreted and run by `nscript`. Of course it is possible to define many functions in the javascript file, but only one should be exposed.
-3. `$0` is the first argument passed to this script. See the next sections for more about nscript arguments.
+3. `$0` is the first argument passed to this script. See the next sections for more about passing (named) arguments to `nscript` scripts.
 4. `echo` is passed into the function by `nscript` as an alias for the "echo" command. This is basically sugar for: `var echo = shell.alias("echo");`. By invoking the `echo` function, `nscript` starts the `echo` executable, and passes in the arguments provided to the function.
 5. `whoami` is an alias for the "whoami" command, which returns the name of the currently logged in user (on Unix systems). The `.get()` functions grabs the standard output of a command. In this cause, the output is passed to echo. (In shell scripts, this statement would be expressed as ``echo "Hello, " `whoami` ``.
-
-### Main `nscript` concepts
-
-We have no seen the three most important concepts of `nscript`, which are all explained in great detail in the [API documentation](#api-documentation) section.
-
-1. An nscript script consists of a function, called the nscript-function, that is exposed through module.exports.
-2. A `shell` variable is always passed into this function by nscript as first argument. The `shell` provides a number of methods to create and invokde commands, aliases, pipes and do user interaction.
-3. Executable can be invoked through command functions, which can be passed in to the nscript-function automatically.
 
 ## API Documentation
 
 ### Command
 
-A command is function that, on invocation, starts an executable. Commands are created through the `shell.alias` function. Commands will be created automatically and injected in the the nscript function if a parameter is named after the command. For example the following two constructions are semantically equal:
+A command is function that, on invocation, starts an executable. Commands are created through the `shell.alias` or `shell.cmd` functions. Commands will be created automatically and injected in the the nscript function if a parameter is named after the command. For example the following two constructions are semantically equal:
 
 ```javascript
 module.exports = function(shell) {
@@ -227,10 +215,7 @@ module.exports = function(shell, echo) {
 
 Commands might have multiple predefined arguments. For example, `gitAmend` could be defined as: `var gitAmend = shell.alias('git', 'commit', '--amend');`. For more details see [shell.alias](#shell-alias).
 
-A command is both a function and an object with functions. Basically, `command()` is equivalent to `command.run()`.
-
-Several API calls return empty commands, which are not bound to any executable yet, such as `shell.inputFrom` and `command.pipe`.
-Bound arguments are always expanded upon command invocation, not upon creation.
+A command is both a function and an object with functions. Basically, `echo()` is sugar for `echo.run()`.
 
 Method of command are always bound to the instance, so you can safely alias methods and invoke them directly:
 ```javascript
@@ -238,9 +223,13 @@ var gitLog = shell.alias("git","log").get;
 gitLog(); //returns the current git log
 ```
 
+#### command.spawn(args)
+
+Starts the current command with the specified args. Returns a `process` object which can be used to work direct the output streams or inspect the exit code. 
+
 #### command.run(args)
 
-Runs the command represented by this command and passes in any arguments after [processing](#nscript-command-parameters) them. The standard output and error are printed. `run` returns the exit code of executed command. By default, `run` throws an exception if the exit code is non-zero. `command.run(args)` can be written shorter as just `command(args)`.
+Runs the command represented by this command and passes in any arguments after [processing](#nscript-command-parameters) them. The standard output and error are printed. `run` returns the exit code of executed command. By default, `run` throws an exception if the exit code is non-zero. `command.run(args)` can be written shorter as just `command(args)`. `command.run(args)` itself is just sugar for `command.spawn(args).wait()`.
 
 Example:
 
@@ -268,35 +257,22 @@ Example:
 var fileNames = ls.get("-a", "*.js").split(/\n/g);
 ```
 
-#### command.getError(args)
+#### command.input(data)
 
-Similar to `command.get(args)` but fetches the error stream of the process instead of the standard output.
-
-#### command.read(data)
-
-Upon next invocation, passes `data` as standard input to the command. The data parameter can either be a string, Buffer, InputStream or file descriptor (number). Returns the command for chaining. Note that if no `read` is set for a command that reads from STDIN, the command will read user input from the shell.
+Upon next invocation, passes `data` as standard input to the command. The data parameter can either be a string, Buffer, InputStream or file descriptor (number). Returns the command for chaining. Note that if no `read` is set for a command, the command will read user input from the standard input stream (probably a terminal).
 
 Example:
 ```javascript
-sort.read(["World", "Hello"].join("\n")).run();
+sort.read("Adelaide\nBanana\Ada").run();
 //prints:
-//Hello
-//World
+//Ada
+//Adelaide
+//Banana
 ```
 
-#### command.pipe(args)
+#### command.read(filename)
 
-Constructs a new, empty command. Then invokes the current command, takes the standard outputstream and passes it to the new command as standard input stream. In this way, output can be piped to other commands.
-
-Example:
-```javascript
-//equivalent to shell command: ls -a | grep '.js' | sort
-ls.pipe("-a").pipe("grep",".js").run("sort")
-```
-
-#### command.readFrom(filename)
-
-Similar to read; opens the file `filename` and uses it as input for the next command invocation. Returns the command for chaining.
+Similar to `input`; opens the file `filename` and uses it as input for the next command invocation. Returns the command for chaining. Note that the file is streamed to the process, so it is a lot more memory efficient than using `input`. 
 
 Example:
 ```javascript
@@ -304,25 +280,40 @@ Example:
 sort.readFrom('groceries.txt').run();
 ```
 
-#### command.writeTo(args, filename)
+#### command.pipe(cmd, args)
 
-During the next invocation, stores the standard output of this command in a file. The argument passed to `writeTo` specifies the target filename. Returns the command for chaining.
+Sugar for `command.spawn().pipe(cmd, args)`.
 
-Example:
-```javascript
-//shell: sort -u -b < groceries.txt > sorted_groceries.txt
-sort.readFrom('grociers.txt').writeTo('sorted_groceries.txt').run('-u', '-b')
-```
-
-#### command.appendTo(args, filename)
-
-Similar to `command.writeTo`, but appends the target file rather than replacing it.
+Starts this process, and pipes it into the process described by the `args`. The first argument should either be the name of an executable, or an unstarted command. The command passed to `pipe` will be started and the `process` of the newly started command will be returned. If you want to pass in additional arguments to the current command first, use `spawn`.
 
 Example:
 ```javascript
-//shell: sort -u -b < groceries.txt > sorted_groceries.txt
-sort.readFrom('grociers.txt').appendTo('sorted_groceries.txt').run('-u', '-b')
+//both equivalent to shell command: ls | grep '.js' | sort
+ls.pipe(grep, ".js").pipe(sort)
+ls.pipe("grep", ".js").pipe("sort")
 ```
+
+#### command.write(filename)
+
+Spawns this command and writes its standard output to the specified file. Sugar for `command.spawn().write(filename).wait()`.
+
+Example:
+```javascript
+//shell: sort < groceries.txt > sorted_groceries.txt
+sort.read('grociers.txt').write('sorted_groceries.txt')
+```
+
+#### command.append(filename)
+
+Similar to `command.write`, but appends the target file rather than replacing it.
+
+#### command.writeError(filename)
+
+Spawns this commands and writes its standard output stream to the specified filename. Unlike `write`, this call doesn't block until the process has finished, but rather returns the started `process`, for easy chaining. Sugar for `command.spawn().writeError()`. 
+
+#### command.appendError(filename)
+
+Similar to `writeError`, but appends the file instead of replacing it. 
 
 #### command.silent()
 
@@ -330,15 +321,35 @@ Suppresses the command output during the next invocation; output is no longer pr
 
 #### command.relax()
 
-Relaxes the execution of a command; do not throw an exception if the command exits with a non-zero exit status upon next invocation. Returns the command for easy chaining.
+Relaxes the execution of a command; do not throw an exception if the command exits with a non-zero exit status upon next invocation. Returns the command for easy chaining. So `command.relax().run()` is basically equivalent to `command.code()`.
 
 #### command.boundArgs
 
-Returns an array; the original args with which this command was constructed: `shell.alias("git", "commit").boundArgs == ["git", "commit"]`
+Returns an array; the original args with which this command was constructed: `shell.cmd("git", "commit").boundArgs == ["git", "commit"]`
 
 #### command.detach(args)
 
 Same as `command.run`, but starts the process in the background, or `detached` mode. This means that nscript will continue executing without waiting for this command to finish. Also, if nscript is done and quits, the command might still be running in the background. Detach returns the process id (pid) of the spawned process.
+
+### process
+
+Object returned by `command.spawn()`. Can be used to wait until the process finishes and redirect its outputs. 
+
+#### process.wait(), process.code(), process.test()
+
+#### process.get(), process.getError()
+
+#### process.pipe(cmd, args), pipeEror(cmd, args)
+
+#### process.write(f), append(f), writeError(f), appendError(f)
+
+#### process.onClose(callback)
+
+#### process.onOut(callback), process.onError(callback)
+
+#### process.pid
+
+#### process.child
 
 ### shell
 
@@ -372,6 +383,14 @@ module.exports = function(shell, echo) {
     echo("hi") //echo has been created using shell.alias('echo') automatically
 }
 ```
+
+#### shell.cmd(args)
+
+just an alias for `shell.alias(args)`. 
+
+#### shell(args)
+
+sugar for `shell.cmd(args).run()`
 
 #### shell.exit(exitCode [, message])
 
@@ -457,9 +476,13 @@ Returns all entries in the given `dir` as string array, relative to the current 
 
 #### shell.isDir(path)
 
-#### shell.readString(path)
+#### shell.read(path)
 
-#### shell.writeString(path, text)
+#### shell.write(path, text)
+
+#### shell.run(args), shell.code(args), shell.test(args), shell.detach(args), shell.spawn(args)
+
+Sugar for `shell.cmd(args).run()` (or `test` or `code` etc.)
 
 ### nscript function arguments
 
