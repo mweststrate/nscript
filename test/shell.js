@@ -53,6 +53,13 @@ exports.testShell = function(test) {
 		shell.useGlobals();
 		test.equals(typeof code, 'function');
 
+		test.equals(shell.alias("echo").get("hi"),"hi\n");
+		test.equals(shell.cmd("echo").get("hi"),"hi\n");
+		test.equals(shell.run("echo", "hi"), 0);
+		var getEcho = shell.alias("echo", { n:true }, "hello").get;
+		test.equals(getEcho("world"),"hello world");
+
+
 		shell.nscript(function(subshell, echo) {
 			test.equals(subshell.get("echo", "hi"), "hi\n");
 			test.equals(echo.get("echo"), "echo\n");
@@ -95,8 +102,9 @@ exports.testCd = function(test) {
 exports.testUtils = function(test) {
 	withShell(function(shell) {
 		var txtFile = "/tmp/" + shell.pid + "_tmp_txt";
-		shell.writeString(txtFile,"abc\u2342de");
-		test.equals(shell.readString(txtFile), "abc\u2342de");
+		shell.write(txtFile,"abc\u2342de");
+		shell.append(txtFile,"\nboe");
+		test.equals(shell.read(txtFile), "abc\u2342de\nboe");
 
 		shell.cd('test');
 		test.equals(shell.isDir('scripts'), true);
@@ -122,7 +130,7 @@ exports.testUtils = function(test) {
 
 function tempScript(shell, script) {
 	var s = "/tmp/nscript_tmp_" + shell.pid;
-	shell.streams("echo",["#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}"]).out(s);
+	shell.spawn("echo",["#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}"]).write(s).wait();
 	shell("chmod","+x", s);
 	return s;
 }

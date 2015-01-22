@@ -20,8 +20,8 @@ function withShell(f) {
 
 exports.testPipe = function(test) {
 	withShell(function(shell) {
-		test.equals(shell.streams("echo","hi").pipe("cat").code(),0);
-		test.equals(shell.streams("echo","hi").pipe("cat").get(),"hi\n");
+		test.equals(shell.spawn("echo","hi").pipe("cat").code(),0);
+		test.equals(shell.spawn("echo","hi").pipe("cat").get(),"hi\n");
 		test.equals(
 			shell.alias("echo","hi")
 			.pipe("sh","-c",["read -p test BLABLA; echo $BLABLA"])
@@ -48,7 +48,7 @@ exports.testPrompt = function(test) {
 		);
 		var prompter = createTempScript(shell,"var x;if ('hi' !== (x = shell.prompt('<testing>'))) throw 'fail:'+x;");
 		test.equals(
-			shell.streams("echo","hi").pipe(prompter)
+			shell.spawn("echo","hi").pipe(prompter)
 			//.code("cat"),
 			.code(),
 			0
@@ -65,7 +65,7 @@ exports.testPrompt = function(test) {
 
 function createTempScript(shell, script) {
 	var s = "/tmp/nscript_tmp_" + shell.pid;
-	shell.writeString(s, "#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}");
+	shell.write(s, "#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}");
 	shell("chmod","+x", s);
 	return s;
 }

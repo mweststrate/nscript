@@ -75,7 +75,7 @@ exports.touch = function(test) {
 
 		shell("nscript", "--touch", "test/tmp/2.js", "--local");
 		//Fix nscript reference, which is not available locally as node_module in this project..
-		shell.writeString("test/tmp/2.js", shell.readString("test/tmp/2.js").replace("require(nscript)", "require('../../')"));
+		shell.write("test/tmp/2.js", shell.read("test/tmp/2.js").replace("require(nscript)", "require('../../')"));
 		test.equals(shell.get('test/tmp/2.js').trim(), 'Hello world');
 
 		test.done();
