@@ -59,7 +59,7 @@ exports.testCommand = function(test) {
 		test.equals(shell.spawn("echo",["module.exports=function(shell,echo){echo.silent()(3);echo(2);}"]).write("/tmp/nscript_" + shell.pid).code(), 0);
 		test.equals(shell.get("nscript","/tmp/nscript_" + shell.pid),"2\n");
 
-		test.equals(shell.relax()("false"),1);
+		test.equals(shell.cmd().relax()("false"),1);
 
 		test.deepEqual(shell.alias("echo","*.js").boundArgs,["echo","*.js"]);
 		test.equals(shell.alias("echo","-n").get("3"),"3");

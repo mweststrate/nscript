@@ -37,12 +37,12 @@ exports.testPrompt = function(test) {
 	withShell(function(shell) {
 		shell.verbose(false);
 		test.equals(
-			shell.input("hi")
-			.code(createTempScript(shell,"if ('hi' !== shell.prompt('<testing>')) throw 'fail';")),
+			shell.cmd(createTempScript(shell,"if ('hi' !== shell.prompt('<testing>')) throw 'fail';")).input("hi")
+			.code(),
 			0
 		);
 		test.equals(
-			shell.input("")
+			shell.cmd().input("")
 			.code(createTempScript(shell,"if ('hi' !== shell.prompt('<testing>','hi')) throw 'fail';")),
 			0
 		);

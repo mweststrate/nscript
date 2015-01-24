@@ -52,7 +52,8 @@ exports.hello2 = function(test) {
 		test.equals(shell.get('test/scripts/hello-params.js',{greeting: "hi"},'michel').trim(), 'hi michel');
 		test.equals(shell.get('test/scripts/hello-params.js','michel','--greeting', 'hi').trim(), 'hi michel');
 
-		test.notEqual(shell.get('nscript', '-v', 'test/scripts/hello-params.js','michel').trim(), 'hello michel');
+		test.equals(shell.getError('nscript', 'test/scripts/hello-params.js','michel').trim(), '');
+		test.notEqual(shell.getError('nscript', '-v', 'test/scripts/hello-params.js','michel').trim(), '');
 		test.equals(shell.get('nscript', '-C','test/scripts', 'hello-params.js','michel').trim(), 'hello michel');
 		test.equals(shell.get('node', '.', '-C','test/scripts', 'hello-params.js','michel').trim(), 'hello michel');
 		test.done();

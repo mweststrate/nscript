@@ -189,9 +189,8 @@ Marking script as executable: 'myscript.js'
 michel@miniub ~/demo $ ./myscript.js
 Hello, world!
 ```
-The next section explains the contents of this script.
 
-## Anatonomy of a `nscript`
+### Anatomy of a `nscript` script
 
 The anatomy of script file can best be explained by looking at the following example script:
 
