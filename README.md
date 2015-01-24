@@ -101,7 +101,7 @@ TODO: primer about arguments
 - [Getting started with `nscript`](#getting-started-with-nscript)
   - [Installing `nscript`](#installing-nscript)
   - [Creating and running your first script](#creating-and-running-your-first-script)
-- [Anatonomy of a `nscript`](#anatonomy-of-a-nscript)
+  - [Anatomy of a `nscript` script](#anatomy-of-a-nscript-script)
 - [API Documentation](#api-documentation)
   - [Command](#command)
     - [command.spawn(args)](#commandspawnargs)
