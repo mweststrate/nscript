@@ -273,6 +273,14 @@ Example:
 var fileNames = ls.get("-a", "*.js").split(/\n/g);
 ```
 
+#### command.getLines(args)
+
+Returns the standard output, splitted by lines.
+
+```javascript
+var fileNames = ls.getLines("-a", "*.js")
+```
+
 #### command.input(data)
 
 Upon next invocation, passes `data` as standard input to the command. The data parameter can either be a string, Buffer, InputStream or file descriptor (number). Returns the command for chaining. Note that if no `read` is set for a command, the command will read user input from the standard input stream (probably a terminal).

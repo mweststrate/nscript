@@ -8,7 +8,7 @@ module.exports = function(shell, grep, $$filetype, $$dir, $0) {
 	// run grep. Grep fails if it doesn't find anything, so test the return value
 	if (!grep.test(
 		// grep options: F: take search literal, i: case insensitive, n: show line numbers
-		{ F: true, i: true, n: true },
+		{ F: true, i: true, n: true },"--color=auto",
 		// pass in the search query literally using brackets. Prompt for a search query if not set
 		[$0 || shell.prompt('Please enter your search text:')],
 		// apply the filter. nscript expands asterixes automatically

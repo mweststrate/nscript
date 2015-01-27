@@ -48,8 +48,8 @@ exports.testCommand = function(test) {
 
 		test.equals(shell.alias().get('test/scripts/hello1.js'), "hello world\n");
 
-		test.equals(shell.alias().input("hi").get("cat"),"hi\n");
-		test.equals(shell.alias().input(new buffer.Buffer("hi")).get("cat"),"hi\n");
+		test.equals(shell.alias().input("hi").get("cat"),"hi");
+		test.equals(shell.alias().input(new buffer.Buffer("hi")).get("cat"),"hi");
 
 		test.equals(shell.alias().spawn("echo", "hi").write("/tmp/nscript_" + shell.pid).code(), 0);
 		test.equals(shell.spawn("echo", "hi").append("/tmp/nscript_" + shell.pid).code(), 0);
