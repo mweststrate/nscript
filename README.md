@@ -347,6 +347,10 @@ Suppresses the command output during the next invocation; output is no longer pr
 
 Relaxes the execution of a command; do not throw an exception if the command exits with a non-zero exit status upon next invocation. Returns the command for easy chaining. So `command.relax().run()` is basically equivalent to `command.code()`.
 
+#### command.env(name, value)
+
+Sets the environment variable with the given `name` to the specified `value` when the command is spawned. If `name` is a map, all specified key/value pairs in the map will be passed to the new process. Returns the command for chaining.
+
 #### command.boundArgs
 
 Returns an array; the original args with which this command was constructed: `shell.cmd("git", "commit").boundArgs == ["git", "commit"]`

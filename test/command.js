@@ -68,6 +68,7 @@ exports.testCommand = function(test) {
 		test.equals(shell.read("/tmp/nscript_out_" + shell.pid),"out\n");
 		test.equals(shell.read("/tmp/nscript_err_" + shell.pid),"error\n");
 
+		test.equals(shell.cmd().env("USER","world").env({ SOMEVAR : 7}).get(tempScript(shell, "console.log(process.env.USER, process.env.SOMEVAR);")), "world 7\n");
 
 		//TODO: add test for relax() + -1 (not spawning), should fail
 
