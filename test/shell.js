@@ -4,20 +4,6 @@ var buffer = require('buffer');
 
 /* This file tests all api's exposed by command and shell */
 
-//wrap in fiber
-function withShell(f) {
-	new Fiber(function() {
-		try {
-			f(require('../lib/shell.js'));
-		}
-		catch(e) {
-			console.error(e);
-			console.log(e.stack);
-			throw e;
-		}
-	}).run();
-}
-
 /*
     - [shell](#shell)
       - [shell.alias(boundArgs)](#shellaliasboundargs)
@@ -35,7 +21,7 @@ function withShell(f) {
       - [shell.useGlobals()](#shelluseglobals)
  */
 exports.testShell = function(test) {
-	withShell(function(shell) {
+	nscript(function(shell) {
 		test.equals(shell.code("nscript", tempScript(shell, "shell.exit(13)")),13);
 
 		test.ok(shell.pid);
@@ -85,8 +71,20 @@ exports.testShell = function(test) {
 	});
 };
 
+exports.testAsync1 = function(test) {
+	nscript(function(shell) {
+		test.equals(shell.test("true"), true);
+		setTimeout(function() {
+			shell.nscript(function(shell) {
+				test.equals(shell.test("true"), true);
+				test.done();
+			});
+		}, 200);
+	});
+};
+
 exports.testCd = function(test) {
-	withShell(function(shell) {
+	nscript(function(shell) {
 		test.equals(!!shell.cwd().match(/\/$/), true);
 		var base = process.cwd() + "/";
 		test.equals(shell.cwd(), base);
@@ -117,7 +115,7 @@ exports.testCd = function(test) {
 };
 
 exports.testUtils = function(test) {
-	withShell(function(shell) {
+	nscript(function(shell) {
 		var txtFile = "/tmp/" + shell.pid + "_tmp_txt";
 		shell.write(txtFile,"abc\u2342de");
 		shell.append(txtFile,"\nboe");
