@@ -83,6 +83,30 @@ exports.testAsync1 = function(test) {
 	});
 };
 
+exports.testFuture = function(test) {
+	nscript(function(shell) {
+		var i = 3;
+		test.equals(shell.test("true"), true);
+		var f = shell.future();
+
+		setTimeout(function() {
+			shell.nscript(function(shell) {
+				test.equals(shell.test("true"), true);
+				console.log("timeout returning");
+				f.return(2);
+			});
+		}, 200);
+		console.log("waiting");
+
+		i = f.wait();
+		console.log("wait");
+
+		test.equals(i, 2);
+		test.equals(shell.test("true"), true);
+		test.done();
+	});
+};
+
 exports.testCd = function(test) {
 	nscript(function(shell) {
 		test.equals(!!shell.cwd().match(/\/$/), true);

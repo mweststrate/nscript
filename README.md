@@ -473,14 +473,31 @@ Shell.colors can be used to print colored output. For example: `console.log(shel
 
 #### shell.nscript(nscriptFunction)
 
-Runs a nscript function. This is convenient if you want to create local aliases, for example:
+Runs a nscript function. This is convenient if you want to create local aliases. It is also necessary if you want to run nscript commands from asynchronous callbacks, for example:
 
 ```javascript
 module.exports = function(shell, echo) {
-    shell.nscript(shell, whoami) {
-        echo("Hello, ");
-        whoami(); //prints current user name
-    });
+    setTimeout(function() {
+        shell.nscript(shell, whoami) {
+            echo("Hello, ");
+            whoami(); //prints current user name
+        });
+    }, 200);
+}
+```
+
+#### shell.future()
+
+Returns a new [`Future`](https://github.com/laverdet/node-fibers#futures) object. Futures can be used to express async/wait patterns:
+
+```javascript
+module.exports = function(shell, echo) {
+    var f = shell.future();
+    setTimeout(function() {
+        f.return(7);
+    }, 200);
+    var value = f.wait(); // Blocks until the timeout completes
+    console.log(value); // Prints 7.
 }
 ```
 
