@@ -508,7 +508,7 @@ Returns all entries in the given `dir` as string array, relative to the current 
 
 #### shell.write(path, text)
 
-#### shell.run(args), shell.code(args), shell.test(args), shell.detach(args), shell.spawn(args)
+#### shell.run(args), shell.code(args), shell.test(args), shell.detach(args), shell.spawn(args), shell.get(args), shell.getError(args)
 
 Sugar for `shell.cmd(args).run()` (or `test` or `code` etc.)
 
