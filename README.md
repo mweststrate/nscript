@@ -25,7 +25,7 @@ $
 
 # Installing `nscript`
 
-Install `nscript` using: `npm install [-g] nscript`. 
+Install `nscript` using: `npm install [-g] nscript`.
 
 `nscript` relies on [node-gyp](https://github.com/TooTallNate/node-gyp), so if any errors occur upon installation, check its [dependencies](https://github.com/TooTallNate/node-gyp#installation).
 
@@ -44,15 +44,15 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
   echo("hello","world")
 
   // use shell expansions
-  // bash: cat src/*.js
-  cat("src/*.js")
+  // bash: echo src/*.js
+  echo("lib/*.js")
 
-  // or, to display all files recusively in src/
-  cat("src/**/*.js")
+  // or, to display all files recusively in lib/
+  cat("lib/**/*.js")
 
   // prevent shell expansion
-  // bash: echo 'src/*.js'
-  echo(["src/*.js"])
+  // bash: echo 'lib/*.js'
+  echo(["lib/*.js"])
 
   // obtain output
   var result = echo.get("hello","world")
@@ -61,49 +61,56 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
   // bash: echo hello world; echo $?
   var exitCode = echo.code("hello","world")
 
-  // pipe processes
-  // bash: ls src/ | grep '.js' | sort -i
-  ls("src/").pipe(grep,".js").pipe(sort,"-i").wait()
-
   // supress output
   // bash: ls > /dev/null
   ls.silent().run()
 
   // write output to file
   // bash: ls > dir.txt
-  ls().write('dir.txt')
+  ls.write('dir.txt')
 
   // append output to file
   // bash: ls >> dir.txt
-  ls().append('dir.txt')
+  ls.append('dir.txt')
 
-  // append standard error to file
-  // bash: ls *.js 2>> errors.txt | sort -u
-  ls("*.js'").errorAppend('errors.txt').pipe(sort, "-u'")
-
-  // read input from file and to file
-  // bash: grep milk < groceries.txt > milksonly.txt
-  grep('milk').read('groceries.txt').write('milksonly.txt')
 
   // pipe data into a process
   // bash: echo "some\ndata" | sort
-  sort().input("some\ndata").wait()
+  sort.input("some\ndata").run()
 
   // prompt for input
   // bash: echo -n "Your age? "; read $MYVAR
   var myvar = shell.prompt("Your age?")
 
+  // commands use stdin if possible
+  // end input with Ctrl+D
+  var sorted = sort.get()
+
   // start a process in the background
   // bash: gedit myfile.txt &
-  gedit().detach("myfile.txt")
+  gedit.detach("groceries.txt")
 
-  // TODO: spawn examples
+  /*
+    command.spawn(arguments) provides fine grained input / output control
+   */
+
+  // pipe processes
+  // bash: ls src/ | grep '.js' | sort -i
+  var sortedFiles = ls.spawn("lib/").pipe(grep,".js").pipe(sort,"-i").get()
+
+  // append standard error to file
+  // bash: ls *.js 2>> errors.txt | sort -u
+  ls.spawn("*.js").appendError('errors.txt').pipe(sort, "-u'").wait()
+
+  // read input from file and to file
+  // bash: grep milk < groceries.txt > milksonly.txt
+  grep.read('groceries.txt').spawn('milk').write('milksonly.txt').wait()
 }
 ```
 
 # Processing command line arguments
 
-TODO: short primer about command line arguments. 
+TODO: short primer about command line arguments.
 
 For the full details see the [documentation](https://github.com/mweststrate/nscript/wiki/Using-Command-Line-Arguments)
 
