@@ -71,6 +71,24 @@ exports.testShell = function(test) {
 	});
 };
 
+exports.testCallback1 = function(test) {
+	nscript(function(shell) {
+		return 3;
+	}, function(err, data) {
+		test.equals(data, 3);
+		test.done();
+	});
+};
+
+exports.testCallback2 = function(test) {
+	nscript(function(shell) {
+		throw 3;
+	}, function(err, data) {
+		test.equals(err, 3);
+		test.done();
+	});
+};
+
 exports.testAsync1 = function(test) {
 	nscript(function(shell) {
 		test.equals(shell.test("true"), true);
@@ -80,6 +98,32 @@ exports.testAsync1 = function(test) {
 				test.done();
 			});
 		}, 200);
+	});
+};
+
+exports.testParallelExecution = function(test) {
+	nscript(function(shell) {
+		var now = +new Date();
+		var finished = 0;
+		function ready() {
+			finished += 1;
+			if (finished == 2) {
+				test.ok((+new Date())-now < 6000); // if serial, this would take at least 10000
+				test.done();
+			}
+		}
+		setImmediate(function() {
+			nscript(function(shell){
+				shell.run("sleep", 5);
+				ready();
+			});
+		});
+		setImmediate(function() {
+			nscript(function(shell) {
+				shell.run("sleep", 5);
+				ready();
+			});
+		});
 	});
 };
 
