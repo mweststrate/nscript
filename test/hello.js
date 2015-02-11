@@ -82,3 +82,10 @@ exports.touch = function(test) {
 		test.done();
 	});
 };
+
+exports.readme = function(test) {
+	withShell(function(shell) {
+		test.equals(shell.cmd("examples/readme.js").test(), true);
+		test.done();
+	});
+}

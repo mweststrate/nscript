@@ -37,7 +37,7 @@ The full [API documentation](https://github.com/mweststrate/nscript/wiki/API-Doc
 
 ```javascript
 #!/usr/bin/nscript
-module.exports = function(shell, grep, ls, cat, echo, gedit) {
+module.exports = function(shell, grep, ls, cat, echo, gedit, sort, whoami) {
 
   // run a command
   // bash: echo hello world
@@ -57,6 +57,10 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
   // obtain output
   var result = echo.get("hello","world")
 
+  // nest commands
+  // bash: echo hello `whoami`
+  echo("hello", whoami.get())
+
   // check exit status
   // bash: echo hello world; echo $?
   var exitCode = echo.code("hello","world")
@@ -67,28 +71,24 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
 
   // write output to file
   // bash: ls > dir.txt
-  ls.write('dir.txt')
+  ls.write('test/tmp/dir.txt')
 
   // append output to file
   // bash: ls >> dir.txt
-  ls.append('dir.txt')
+  ls.append('test/tmp/dir.txt')
 
 
   // pipe data into a process
-  // bash: echo "some\ndata" | sort
-  sort.input("some\ndata").run()
+  // bash: echo "pears\napples" | sort
+  sort.input("pears\napples").run()
 
   // prompt for input
-  // bash: echo -n "Your age? "; read $MYVAR
-  var myvar = shell.prompt("Your age?")
-
-  // commands use stdin if possible
-  // end input with Ctrl+D
-  var sorted = sort.get()
+  // bash: echo -n "Your age? "; read $AGE
+  var age = shell.prompt("Your age?")
 
   // start a process in the background
-  // bash: gedit myfile.txt &
-  gedit.detach("groceries.txt")
+  // bash: gedit test/groceries.txt &
+  gedit.detach("test/groceries.txt")
 
   /*
     command.spawn(arguments) provides fine grained input / output control
@@ -96,15 +96,15 @@ module.exports = function(shell, grep, ls, cat, echo, gedit) {
 
   // pipe processes
   // bash: ls src/ | grep '.js' | sort -i
-  var sortedFiles = ls.spawn("lib/").pipe(grep,".js").pipe(sort,"-i").get()
+  var sortedMilks = ls.spawn("test/groceries.txt").pipe(grep,"milk").pipe(sort,"-i").get()
 
   // append standard error to file
   // bash: ls *.js 2>> errors.txt | sort -u
-  ls.spawn("*.js").appendError('errors.txt').pipe(sort, "-u'").wait()
+  ls.spawn("lib/*.js").appendError('test/tmp/errors.txt').pipe(sort, "-u").wait()
 
   // read input from file and to file
   // bash: grep milk < groceries.txt > milksonly.txt
-  grep.read('groceries.txt').spawn('milk').write('milksonly.txt').wait()
+  grep.read('test/groceries.txt').spawn('milk').write('test/tmp/milksonly.txt').wait()
 }
 ```
 

@@ -1,0 +1,17 @@
+examples
+lib
+LICENSE
+node_modules
+npm-debug.log
+package.json
+README.md
+test
+dir.txt
+examples
+lib
+LICENSE
+node_modules
+npm-debug.log
+package.json
+README.md
+test
