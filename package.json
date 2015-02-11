@@ -1,37 +1,37 @@
 {
-  "name": "nscript",
-  "version": "0.1.1",
-  "description": "Javascript powered shell scripts",
-  "main": "lib/index.js",
-  "bin": {
-    "nscript": "lib/index.js"
-  },
-  "dependencies": {
-    "colors": "^1.0.3",
-    "commander": "^2.6.0",
-    "fibers": "^1.0.2",
-    "glob": "^4.3.2",
-    "home-dir": "^0.2.0"
-  },
-  "devDependencies": {
-    "nodeunit": "^0.9.0"
-  },
-  "scripts": {
-    "test": "nodeunit test/"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mweststrate/nscript.git"
-  },
-  "keywords": [
-    "shell",
-    "script",
-    "shellscript"
-  ],
-  "author": "Michel Weststrate",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mweststrate/nscript/issues"
-  },
-  "homepage": "https://github.com/mweststrate/nscript"
+    "name": "nscript",
+    "version": "0.1.2",
+    "description": "Javascript powered shell scripts",
+    "main": "lib/index.js",
+    "bin": {
+        "nscript": "lib/index.js"
+    },
+    "dependencies": {
+        "colors": "^1.0.3",
+        "commander": "^2.6.0",
+        "fibers": "^1.0.2",
+        "glob": "^4.3.2",
+        "home-dir": "^0.2.0"
+    },
+    "devDependencies": {
+        "nodeunit": "^0.9.0"
+    },
+    "scripts": {
+        "test": "nodeunit test/"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mweststrate/nscript.git"
+    },
+    "keywords": [
+        "shell",
+        "script",
+        "shellscript"
+    ],
+    "author": "Michel Weststrate",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/mweststrate/nscript/issues"
+    },
+    "homepage": "https://github.com/mweststrate/nscript"
 }

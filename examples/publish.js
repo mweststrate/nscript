@@ -6,7 +6,7 @@ module.exports = function(shell, npm, git) {
 	// Bump version number
 	var nrs = package.version.split(".");
 	nrs[2] = 1 + parseInt(nrs[2], 10);
-	var version = package.version = shell.prompt("Please specify the new package version of '" + package.name + "'' (Ctrl^C to abort)", nrs.join("."));
+	var version = package.version = shell.prompt("Please specify the new package version of '" + package.name + "' (Ctrl^C to abort)", nrs.join("."));
 	if (!version.match(/^\d+\.\d+\.\d+$/))
 		shell.exit(1, "Invalid semantic version: " + version);
 
