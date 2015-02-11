@@ -1,19 +1,29 @@
 #!/usr/bin/nscript
-/* Publish.js */
-module.exports = function(shell, npm) {
+/* Publish.js, publish a new version of the npm package as found in the current directory */
+module.exports = function(shell, npm, git) {
 	var package = require('package.json');
-	if (shell.prompt("Are you sure you want to publish " + package.name + " version " + package.version + " to the NPM package repository? [y/n]") === "y") {
-		if (npm.test("info", package.name)) {
-			//package is registered in npm
-			var publishedPackageInfo = JSON.parse(npm.get("info", package.name));
-			if (publishedPackageInfo.versions == package.version || publishedPackageInfo.versions.indexOf(package.version) != -1) {
-				console.error("Version " + package.version + " is already published to npm")
-				shell.exit(1);
-			}
-		}
-		npm("publish");
-		console.log("Published!")
+
+	// Bump version number
+	var nrs = package.version.split(".");
+	nrs[2] = 1 + parseInt(nrs[2], 10);
+	var version = package.version = shell.prompt("Please specify the new package version (Ctrl^C to abort)", nrs.join("."));
+	if (!version.match(/^\d+\.\d+\.\d+$/))
+		shell.exit(1, "Invalid semantic version: " + version);
+
+	// Check registery data
+	if (npm.test("info", package.name)) {
+		//package is registered in npm?
+		var publishedPackageInfo = JSON.parse(npm.get("info", package.name));
+		if (publishedPackageInfo.versions == version || publishedPackageInfo.versions.indexOf(version) != -1)
+			shell.exit(2, "Version " + package.version + " is already published to npm");
+
+		shell.write('package.json', JSON.stringify(package, null, 4));
+
+		// Finally, commit and publish!
+		//git("commit","-am","Bumped to version " + version);
+		//git("tag", version);
+		//git("push");
+		//npm("publish");
+		console.log("Published!");
 	}
-	else
-		console.log("Cancelled")
-}
+};

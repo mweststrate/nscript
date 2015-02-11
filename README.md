@@ -23,6 +23,8 @@ Epic fail.
 $
 ```
 
+More examples can be found in the [examples](https://github.com/mweststrate/nscript/blob/master/examples) directory.
+
 # Installing `nscript`
 
 Install `nscript` using: `npm install [-g] nscript`.
