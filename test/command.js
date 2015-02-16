@@ -51,13 +51,18 @@ exports.testCommand = function(test) {
 		test.equals(shell.alias().input("hi").get("cat"),"hi");
 		test.equals(shell.alias().input(new buffer.Buffer("hi")).get("cat"),"hi");
 
-		test.equals(shell.alias().spawn("echo", "hi").write("/tmp/nscript_" + shell.pid).code(), 0);
-		test.equals(shell.spawn("echo", "hi").append("/tmp/nscript_" + shell.pid).code(), 0);
-		test.equals(shell.alias().read("/tmp/nscript_" + shell.pid).get("cat"),"hi\nhi\n");
+		test.equals(shell.alias().spawn("echo", "hi").write("/tmp/nscript_bla" + shell.pid).code(), 0);
+		test.equals(shell.spawn("echo", "hi").append("/tmp/nscript_bla" + shell.pid).code(), 0);
+		test.equals(shell.alias().read("/tmp/nscript_bla" + shell.pid).get("cat"),"hi\nhi\n");
+
+		test.deepEqual(shell.getLines("cat", "test/groceries.txt"), ["apples","milk","pears","fruity milk","coffee milk"]);
 
 		//test silent:
-		test.equals(shell.spawn("echo",["module.exports=function(shell,echo){echo.silent()(3);echo(2);}"]).write("/tmp/nscript_" + shell.pid).code(), 0);
-		test.equals(shell.get("nscript","/tmp/nscript_" + shell.pid),"2\n");
+		test.equals(shell.cmd(tempScript(shell, "var echo=shell.alias('echo');echo(1);echo.silent()(2);echo(3);")).write("/tmp/nscript_boe" + shell.pid), 0);
+		test.equals(shell.read("/tmp/nscript_boe" + shell.pid),"1\n3\n");
+
+		test.equals(shell(tempScript(shell,"shell.get('echo','hi')")),"");
+
 
 		test.equals(shell.cmd().relax()("false"),1);
 
