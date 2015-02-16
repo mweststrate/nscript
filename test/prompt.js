@@ -20,8 +20,8 @@ function withShell(f) {
 
 exports.testPipe = function(test) {
 	withShell(function(shell) {
-		test.equals(shell.spawn("echo","hi").pipe("cat").code(),0);
-		test.equals(shell.spawn("echo","hi").pipe("cat").get(),"hi\n");
+		test.equals(shell.cmd("echo","hi").spawn().pipe("cat").code(),0);
+		test.equals(shell.cmd("echo","hi").pipe("cat").get(),"hi\n");
 		test.equals(
 			shell.alias("echo","hi")
 			.pipe("sh","-c",["read -p test BLABLA; echo $BLABLA"])
@@ -48,7 +48,7 @@ exports.testPrompt = function(test) {
 		);
 		var prompter = createTempScript(shell,"var x;if ('hi' !== (x = shell.prompt('<testing>'))) throw 'fail:'+x;");
 		test.equals(
-			shell.spawn("echo","hi").pipe(prompter)
+			shell.cmd("echo","hi").spawn().pipe(prompter)
 			//.code("cat"),
 			.code(),
 			0

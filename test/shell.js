@@ -213,7 +213,7 @@ exports.testUtils = function(test) {
 
 function tempScript(shell, script) {
 	var s = "/tmp/nscript_tmp_" + shell.pid;
-	shell.spawn("echo",["#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}"]).write(s).wait();
+	shell.cmd("echo",["#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}"]).write(s);
 	shell("chmod","+x", s);
 	return s;
 }

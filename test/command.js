@@ -47,12 +47,13 @@ exports.testCommand = function(test) {
 		test.equals(shell.alias().test('false'), false);
 
 		test.equals(shell.alias().get('test/scripts/hello1.js'), "hello world\n");
+		test.equals(shell.cmd("echo","1").args("2","3").args("4").get("5"), "1 2 3 4 5\n");
 
 		test.equals(shell.alias().input("hi").get("cat"),"hi");
 		test.equals(shell.alias().input(new buffer.Buffer("hi")).get("cat"),"hi");
 
-		test.equals(shell.alias().spawn("echo", "hi").write("/tmp/nscript_bla" + shell.pid).code(), 0);
-		test.equals(shell.spawn("echo", "hi").append("/tmp/nscript_bla" + shell.pid).code(), 0);
+		test.equals(shell.cmd("echo","hi").write("/tmp/nscript_bla" + shell.pid), 0);
+		test.equals(shell.cmd("echo","hi").append("/tmp/nscript_bla" + shell.pid), 0);
 		test.equals(shell.alias().read("/tmp/nscript_bla" + shell.pid).get("cat"),"hi\nhi\n");
 
 		test.deepEqual(shell.getLines("cat", "test/groceries.txt"), ["apples","milk","pears","fruity milk","coffee milk"]);
@@ -61,15 +62,15 @@ exports.testCommand = function(test) {
 		test.equals(shell.cmd(tempScript(shell, "var echo=shell.alias('echo');echo(1);echo.silent()(2);echo(3);")).write("/tmp/nscript_boe" + shell.pid), 0);
 		test.equals(shell.read("/tmp/nscript_boe" + shell.pid),"1\n3\n");
 
-		test.equals(shell(tempScript(shell,"shell.get('echo','hi')")),"");
-
+		test.equals(shell.get(tempScript(shell,"console.log(shell.get('echo','hi').length)")),"3\n");
+		test.equals(shell.get(tempScript(shell,"console.log(shell.alias('echo').get('hi').length)")),"3\n");
 
 		test.equals(shell.cmd().relax()("false"),1);
 
 		test.deepEqual(shell.alias("echo","*.js").boundArgs,["echo","*.js"]);
 		test.equals(shell.alias("echo","-n").get("3"),"3");
 
-		test.equals(shell.spawn(tempScript(shell, "console.log('out');console.error('error')")).write("/tmp/nscript_out_" + shell.pid).writeError("/tmp/nscript_err_" + shell.pid).code(), 0);
+		test.equals(shell.cmd(tempScript(shell, "console.log('out');console.error('error')")).spawn().write("/tmp/nscript_out_" + shell.pid).writeError("/tmp/nscript_err_" + shell.pid).code(), 0);
 		test.equals(shell.read("/tmp/nscript_out_" + shell.pid),"out\n");
 		test.equals(shell.read("/tmp/nscript_err_" + shell.pid),"error\n");
 
@@ -84,7 +85,7 @@ exports.testCommand = function(test) {
 
 		test.equals(shell.get("ps", "h", pid).trim().split("\n").length, 1);
 		//both grep and sleep might appear in ps aux
-		test.ok(shell.spawn("ps","auxh").pipe("grep",pid).get().trim().split("\n").length >= 1);
+		test.ok(shell.cmd("ps","auxh").pipe("grep",pid).get().trim().split("\n").length >= 1);
 
 		setTimeout(function() {
 			//pid is now killed,

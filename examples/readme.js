@@ -53,18 +53,18 @@ module.exports = function(shell, grep, ls, cat, echo, gedit, sort, whoami) {
   gedit.detach("test/groceries.txt")
 
   /*
-    command.spawn(arguments) provides fine grained input / output control
+    command.spawn() provides fine grained input / output control
    */
 
   // pipe processes
   // bash: ls src/ | grep '.js' | sort -i
-  var sortedMilks = ls.spawn("test/groceries.txt").pipe(grep,"milk").pipe(sort,"-i").get()
+  var sortedMilks = ls.args("test/groceries.txt").pipe(grep,"milk").pipe(sort,"-i").get()
 
   // append standard error to file
   // bash: ls *.js 2>> errors.txt | sort -u
-  ls.spawn("lib/*.js").appendError('test/tmp/errors.txt').pipe(sort, "-u").wait()
+  ls.args("lib/*.js").spawn().appendError('test/tmp/errors.txt').pipe(sort, "-u").wait()
 
   // read input from file and to file
   // bash: grep milk < groceries.txt > milksonly.txt
-  grep.read('test/groceries.txt').spawn('milk').write('test/tmp/milksonly.txt').wait()
+  grep.read('test/groceries.txt').args('milk').spawn().write('test/tmp/milksonly.txt').wait()
 }
