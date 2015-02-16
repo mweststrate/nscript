@@ -98,7 +98,7 @@ module.exports = function(shell, grep, ls, cat, echo, gedit, sort, whoami) {
 
   // read input from file and to file
   // bash: grep milk < groceries.txt > milksonly.txt
-  grep.read('test/groceries.txt').args('milk').spawn().write('test/tmp/milksonly.txt').wait()
+  grep.read('test/groceries.txt').args('milk').write('test/tmp/milksonly.txt')
 
   // spawn() provides fine grained input / output control append standard error to file
   // bash: ls *.js 2>> errors.txt | sort -u
