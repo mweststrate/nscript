@@ -92,21 +92,17 @@ module.exports = function(shell, grep, ls, cat, echo, gedit, sort, whoami) {
   // bash: gedit test/groceries.txt &
   gedit.detach("test/groceries.txt")
 
-  /*
-    command.spawn(arguments) provides fine grained input / output control
-   */
-
   // pipe processes
-  // bash: ls src/ | grep '.js' | sort -i
-  var sortedMilks = ls.spawn("test/groceries.txt").pipe(grep,"milk").pipe(sort,"-i").get()
-
-  // append standard error to file
-  // bash: ls *.js 2>> errors.txt | sort -u
-  ls.spawn("lib/*.js").appendError('test/tmp/errors.txt').pipe(sort, "-u").wait()
+  // bash: cat test/groceries | grep '.js' | sort -i
+  var sortedMilks = cat.args("test/groceries.txt").pipe(grep,"milk").pipe(sort,"-i").get()
 
   // read input from file and to file
   // bash: grep milk < groceries.txt > milksonly.txt
-  grep.read('test/groceries.txt').spawn('milk').write('test/tmp/milksonly.txt').wait()
+  grep.read('test/groceries.txt').args('milk').spawn().write('test/tmp/milksonly.txt').wait()
+
+  // spawn() provides fine grained input / output control append standard error to file
+  // bash: ls *.js 2>> errors.txt | sort -u
+  ls.args("lib/*.js").spawn().appendError('test/tmp/errors.txt').pipe(sort, "-u").wait()
 }
 ```
 
@@ -184,7 +180,7 @@ require('nscript')(require('./script.js'));
 # Future plans
 
 1. Windows support
-2. Rely on child_process.spawnSync instead of fibers for synchronous executing.
+2. Minor improvements
 
 # Comparison to other tools.
 
