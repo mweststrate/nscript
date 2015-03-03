@@ -99,6 +99,22 @@ exports.testCommand = function(test) {
 	});
 };
 
+exports.testActiveFiberException = function(test) {
+	nscript(function(shell) {
+		test.equals(shell.cmd("ls").silent().test(), true);
+		setImmediate(function() {
+			try {
+				shell.run("ls");
+				test.fail();
+			}
+			catch (e) {
+				test.equals(e.name, 'NotInNscriptFunction');
+			}
+			test.done();
+		});
+	});
+};
+
 function tempScript(shell, script) {
 	var s = "/tmp/nscript_tmp_" + shell.pid;
 	shell.cmd("echo",["#!/usr/bin/nscript\nmodule.exports=function(shell){"+script+"}"]).write(s);
