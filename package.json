@@ -1,6 +1,6 @@
 {
     "name": "nscript",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "description": "Javascript powered shell scripts",
     "main": "lib/index.js",
     "bin": {
