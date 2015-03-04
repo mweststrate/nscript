@@ -2,7 +2,13 @@
 
 *Write shell scripts like a bearded guru by unleashing your javascript skills!*
 
+* [API documentation](https://github.com/mweststrate/nscript/wiki/API-Documentation)
+* [TypeScript .d.ts typing](https://github.com/mweststrate/nscript/blob/master/nscript.d.ts)
+* [npm package](https://www.npmjs.com/package/nscript)
+
 `nscript` is a tool to write (sophisticated) shell scripts using javascript. It offers synchronous [process spawning](https://github.com/mweststrate/nscript/wiki/API-Documentation), [command line argument parsing](https://github.com/mweststrate/nscript/wiki/Using-Command-Line-Arguments), [parameter expansions](https://github.com/mweststrate/nscript/wiki/Argument-expansion), parallel execution, stream redirection, pipes; in short; anything that you liked about bash is now possible in javascript. `nscript` ships with a [REPL](https://github.com/mweststrate/nscript/wiki/Nscript-REPL-and-CLI-arguments) as well.
+
+`nscript` is already being used in for production systems at [Mendix](https://github.com/mendix) to power CI scripts for deployment, automated testing, saucelabs integration etc.
 
 ```javascript
 #!/usr/bin/nscript
@@ -27,11 +33,11 @@ More examples can be found in the [examples](https://github.com/mweststrate/nscr
 
 # Installing `nscript`
 
-Install `nscript` using: `npm install [-g] nscript`.
+Install `nscript` using: `npm install [-g] [--save[-dev]] nscript`.
 
 `nscript` relies on [node-gyp](https://github.com/TooTallNate/node-gyp), so if any errors occur upon installation, check its [dependencies](https://github.com/TooTallNate/node-gyp#installation).
 
-# nscript primer
+# `nscript` primer
 
 An `nscript` script is just a function exposed by a CommonJS module, preceded by a hashbang. The first parameter passes in the `shell` object, other parameternames are filled with wrapped executables with the same name. Use `$flag` or `$$param` as parameter names to make it possible for users to pass in arguments to your script.
 
@@ -106,19 +112,13 @@ module.exports = function(shell, grep, ls, cat, echo, gedit, sort, whoami) {
 }
 ```
 
-# Processing command line arguments
-
-TODO: short primer about command line arguments.
-
-For the full details see the [documentation](https://github.com/mweststrate/nscript/wiki/Using-Command-Line-Arguments)
-
 # Anatomy of a `nscript` script
 
 The anatomy of script file can best be explained by looking at the following example script:
 
 ```javascript
 #!/usr/bin/nscript
-module.exports = function(shell, $0, echo, whoami) {
+module.exports = function(shell, $0, echo, whoami, $verbose) {
 	if ($0)
 		echo("Hello, ", $0)
 	else
@@ -130,14 +130,14 @@ The lines explained in detail:
 
 1. The first line is a so called `shell bang` to indicate unix based systems how to run this script. It is basically sugar for `nscript thisfile.js`. The line is further meaningless and ignored by node.
 2. A `nscript` script exposes a single function through `module.exports`. This is the function that will be interpreted and run by `nscript`. Of course it is possible to define many functions in the javascript file, but only one should be exposed.
-3. `$0` is the first argument passed to this script. See the next sections for more about passing (named) arguments to `nscript` scripts.
+3. `$0` is the first argument passed to this script. `$verbose` makes sure the `--verbose` command line flag is parsed automatically. See the [documentation](https://github.com/mweststrate/nscript/wiki/Using-Command-Line-Arguments) for more details about automatic parsing of command line flags.
 4. `echo` is passed into the function by `nscript` as an alias for the "echo" command. This is basically sugar for: `var echo = shell.alias("echo");`. By invoking the `echo` function, `nscript` starts the `echo` executable, and passes in the arguments provided to the function.
 5. `whoami` is an alias for the "whoami" command, which returns the name of the currently logged in user (on Unix systems). The `.get()` functions grabs the standard output of a command. In this cause, the output is passed to echo. (In shell scripts, this statement would be expressed as ``echo "Hello, " `whoami` ``.
 
 
 # Running nscripts without global `nscript`.
 
-If `nscript` is installed as module of your node project, you can also start `nscript` scripts without requiring a globally installed nscript:
+If `nscript` is installed as module of your node/npm project, you can also start `nscript` scripts without requiring a globally installed nscript:
 
 ```javascript
 #!/usr/bin/env node
@@ -176,6 +176,10 @@ $ npm install nscript --save
 ```javacript
 require('nscript')(require('./script.js'));
 ```
+
+## Todo: working with Futures
+
+(add example of async code + futures & nested nscript functions)
 
 # Future plans
 
