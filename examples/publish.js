@@ -22,7 +22,7 @@ module.exports = function(shell, npm, git) {
 		// Finally, commit and publish!
 		git("commit","-am","Bumped to version " + version);
 		git("tag", version);
-		git("push");
+		git("push", { tags: true });
 		npm("publish");
 		console.log("Published!");
 	}
