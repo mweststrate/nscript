@@ -50,6 +50,7 @@ interface Command {
 	spawn():SpawnedCommand;
 
 	/* Wrappers of SpawnedCommand */
+	(...args:CommandArg[]):number;
 	run(...args:CommandArg[]):number;
 	code(...args:CommandArg[]):number;
 	test(...args:CommandArg[]):boolean;
