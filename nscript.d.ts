@@ -18,6 +18,8 @@ interface Shell {
 	cwd():string;
 	pwd():string;
 	cd(newPath?:string);
+	pushd(newPath: string);
+	popd();
 
 	isFile(filename:string):boolean;
 	isDir(path:string):boolean;

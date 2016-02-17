@@ -178,6 +178,19 @@ exports.testCd = function(test) {
 		test.equals(shell.pwd(), shell.cwd());
 		shell.cd();
 		test.equals(shell.pwd(), base);
+
+		shell.pushd("node_modules");
+		test.equals(shell.pwd(), base + "node_modules/");
+		shell.pushd("glob");
+		test.equals(shell.pwd(), base + "node_modules/glob/");
+		shell.popd();
+		test.equals(shell.pwd(), base + "node_modules/");
+		shell.pushd("../node_modules/colors");
+		test.equals(shell.pwd(), base + "node_modules/colors/");
+		shell.popd();
+		shell.popd();
+		test.equals(shell.pwd(), base);
+
 		test.done();
 	});
 };
