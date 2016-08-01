@@ -3,8 +3,7 @@
 *Write shell scripts like a bearded guru by unleashing your javascript skills!*
 
 * [API documentation](https://github.com/mweststrate/nscript/wiki/API-Documentation)
-* [TypeScript .d.ts typing](https://github.com/mweststrate/nscript/blob/master/nscript.d.ts)
-* [npm package](https://www.npmjs.com/package/nscript)
+* [npm package](https://www.npmjs.com/package/nscript) (includes typescript typings)
 
 `nscript` is a tool to write (sophisticated) shell scripts using javascript. It offers synchronous [process spawning](https://github.com/mweststrate/nscript/wiki/API-Documentation), [command line argument parsing](https://github.com/mweststrate/nscript/wiki/Using-Command-Line-Arguments), [parameter expansions](https://github.com/mweststrate/nscript/wiki/Argument-expansion), parallel execution, stream redirection, pipes; in short; anything that you liked about bash is now possible in javascript. `nscript` ships with a [REPL](https://github.com/mweststrate/nscript/wiki/Nscript-REPL-and-CLI-arguments) as well.
 

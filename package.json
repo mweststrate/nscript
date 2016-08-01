@@ -1,8 +1,9 @@
 {
   "name": "nscript",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Javascript powered shell scripts",
   "main": "lib/index.js",
+  "typings": "nscript.d.ts",
   "bin": {
     "nscript": "lib/index.js"
   },
